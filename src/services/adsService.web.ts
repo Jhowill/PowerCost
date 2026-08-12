@@ -10,3 +10,5 @@ export const showRewardedAd = async (): Promise<boolean> => {
 };
 
 export const showInterstitialAd = async (): Promise<boolean> => false;
+
+export const showAppOpenAd = async (): Promise<boolean> => false;

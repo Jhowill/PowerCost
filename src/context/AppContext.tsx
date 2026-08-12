@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
-import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, useColorScheme } from 'react-native';
 
 import { translate } from '../i18n/translations';
-import { initializeAds, showInterstitialAd, showRewardedAd } from '../services/adsService';
+import { initializeAds, showAppOpenAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
 import { palettes } from '../theme';
 import {
   AdsState,
@@ -110,6 +110,9 @@ const safeParse = <T,>(raw: string | null, fallback: T): T => {
 export function AppProvider({ children }: PropsWithChildren) {
   const systemTheme = useColorScheme();
   const [hydrated, setHydrated] = useState(false);
+  const [adsInitialized, setAdsInitialized] = useState(false);
+  const launchAdEligible = useRef(false);
+  const launchAdAttempted = useRef(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [ads, setAds] = useState<AdsState>(DEFAULT_ADS);
   const [history, setHistory] = useState<SavedSimulation[]>([]);
@@ -117,13 +120,14 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [currentSimulation, setCurrentSimulation] = useState<SavedSimulation | null>(null);
 
   useEffect(() => {
-    void initializeAds();
+    void initializeAds().finally(() => setAdsInitialized(true));
     void Promise.all([
       AsyncStorage.getItem(STORAGE.settings),
       AsyncStorage.getItem(STORAGE.history),
       AsyncStorage.getItem(STORAGE.ads),
     ]).then(([settingsRaw, historyRaw, adsRaw]) => {
       const loadedSettings = safeParse(settingsRaw, DEFAULT_SETTINGS);
+      launchAdEligible.current = loadedSettings.hasSeenFirstResult;
       setSettings(loadedSettings);
       setHistory(safeParse(historyRaw, []));
       setAds(safeParse(adsRaw, DEFAULT_ADS));
@@ -131,6 +135,22 @@ export function AppProvider({ children }: PropsWithChildren) {
       setHydrated(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (!hydrated || !adsInitialized) return;
+
+    if (!launchAdAttempted.current) {
+      launchAdAttempted.current = true;
+      if (launchAdEligible.current && !isActiveUntil(ads.adFreeUntil)) void showAppOpenAd();
+    }
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active' && settings.hasSeenFirstResult && !isActiveUntil(ads.adFreeUntil)) {
+        void showAppOpenAd();
+      }
+    });
+    return () => subscription.remove();
+  }, [ads.adFreeUntil, adsInitialized, hydrated, settings.hasSeenFirstResult]);
 
   useEffect(() => {
     if (hydrated) void AsyncStorage.setItem(STORAGE.settings, JSON.stringify(settings));

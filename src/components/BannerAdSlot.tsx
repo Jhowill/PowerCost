@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useApp } from '../context/AppContext';
+import { getAdUnitId } from '../config/ads';
 import { nativeAdsAvailable } from '../services/adsService';
 
 declare const require: (moduleName: string) => Record<string, unknown>;
@@ -19,7 +20,7 @@ export function BannerAdSlot() {
       };
       return (
         <View style={styles.nativeWrap}>
-          <ads.BannerAd unitId={ads.TestIds.BANNER} size={ads.BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
+          <ads.BannerAd unitId={getAdUnitId('banner', ads.TestIds.BANNER)} size={ads.BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
         </View>
       );
     } catch {

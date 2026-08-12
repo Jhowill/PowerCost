@@ -4,6 +4,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BannerAdSlot } from '../../src/components/BannerAdSlot';
+import { NativeAdSlot } from '../../src/components/NativeAdSlot';
 import { Button, Card, Header, Page } from '../../src/components/ui';
 import { useApp } from '../../src/context/AppContext';
 import { formatCurrency } from '../../src/utils/calculation';
@@ -59,6 +60,7 @@ export default function HomeScreen() {
           <Text style={[styles.tipText, { color: colors.textMuted }]}>{t('home.tip')}</Text>
         </View>
       </Card>
+      <NativeAdSlot />
       <BannerAdSlot />
     </Page>
   );

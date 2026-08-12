@@ -3,6 +3,7 @@ import { SupportedLocale } from '../types';
 type Dictionary = Record<string, string>;
 
 const pt: Dictionary = {
+  'ads.sponsored': 'Anúncio',
   'nav.home': 'Início', 'nav.calculate': 'Calcular', 'nav.history': 'Histórico', 'nav.settings': 'Ajustes',
   'common.back': 'Voltar', 'common.next': 'Próximo', 'common.cancel': 'Cancelar', 'common.delete': 'Excluir',
   'common.view': 'Ver', 'common.recalculate': 'Recalcular', 'common.active': 'Ativo', 'common.done': 'Pronto',
@@ -94,6 +95,7 @@ const pt: Dictionary = {
 
 const en: Dictionary = {
   ...pt,
+  'ads.sponsored': 'Sponsored',
   'nav.home': 'Home', 'nav.calculate': 'Calculate', 'nav.history': 'History', 'nav.settings': 'Settings',
   'common.back': 'Back', 'common.next': 'Next', 'common.cancel': 'Cancel', 'common.delete': 'Delete', 'common.view': 'View', 'common.recalculate': 'Recalculate', 'common.active': 'Active', 'common.done': 'Done',
   'home.subtitle': 'See what is driving up your electricity bill.', 'home.heroTitle': 'Estimate in a few taps', 'home.heroText': 'Enter the appliance, power, usage time and rate.', 'home.calculateNow': 'Calculate now', 'home.history': 'History', 'home.historyHint': 'Your estimates', 'home.compare': 'Compare', 'home.compareHint': 'See what costs more', 'home.tipTitle': 'Energy-saving tip', 'home.tip': 'Unplug appliances when they are not in use.', 'home.lastTitle': 'Last estimate', 'home.noCalculation': 'You have not calculated an appliance yet.',
@@ -134,6 +136,7 @@ const en: Dictionary = {
 
 const es: Dictionary = {
   ...en,
+  'ads.sponsored': 'Anuncio',
   'nav.home': 'Inicio', 'nav.calculate': 'Calcular', 'nav.history': 'Historial', 'nav.settings': 'Ajustes', 'common.back': 'Volver', 'common.next': 'Siguiente', 'common.cancel': 'Cancelar', 'common.delete': 'Eliminar', 'common.view': 'Ver', 'common.recalculate': 'Recalcular',
   'common.active': 'Activo', 'common.done': 'Listo',
   'home.subtitle': 'Descubre qué pesa en tu factura de luz.', 'home.heroTitle': 'Simula en pocos toques', 'home.heroText': 'Indica aparato, potencia, tiempo de uso y tarifa.', 'home.calculateNow': 'Calcular ahora', 'home.history': 'Historial', 'home.historyHint': 'Tus cálculos', 'home.compare': 'Comparar', 'home.compareHint': 'Ver cuál cuesta más', 'home.tipTitle': 'Consejo de ahorro', 'home.tip': 'Desenchufa los aparatos cuando no los uses.', 'home.lastTitle': 'Último cálculo', 'home.noCalculation': 'Aún no has calculado ningún aparato.',
@@ -172,6 +175,7 @@ const es: Dictionary = {
 
 const fr: Dictionary = {
   ...en,
+  'ads.sponsored': 'Publicité',
   'nav.home': 'Accueil', 'nav.calculate': 'Calculer', 'nav.history': 'Historique', 'nav.settings': 'Réglages', 'common.back': 'Retour', 'common.next': 'Suivant', 'common.cancel': 'Annuler', 'common.delete': 'Supprimer', 'common.view': 'Voir', 'common.recalculate': 'Recalculer',
   'common.active': 'Actif', 'common.done': 'Terminé',
   'home.subtitle': 'Découvrez ce qui pèse sur votre facture.', 'home.heroTitle': 'Estimez en quelques appuis', 'home.heroText': 'Indiquez appareil, puissance, durée et tarif.', 'home.calculateNow': 'Calculer maintenant', 'home.history': 'Historique', 'home.historyHint': 'Vos calculs', 'home.compare': 'Comparer', 'home.compareHint': 'Voir ce qui coûte plus', 'home.tipTitle': 'Conseil d’économie', 'home.tip': 'Débranchez les appareils lorsqu’ils ne sont pas utilisés.', 'home.lastTitle': 'Dernier calcul', 'home.noCalculation': 'Vous n’avez encore calculé aucun appareil.',
