@@ -33,7 +33,7 @@ export default function CompareScreen() {
             <Text style={[styles.summaryText, { color: colors.textMuted }]}>{t('compare.highest', { name: visible[0].input.applianceNameKey ? t(visible[0].input.applianceNameKey) : visible[0].input.applianceName })}</Text>
           </Card>
           {visible.map((item, index) => (
-            <Pressable key={item.id} onPress={() => open(index)}>
+            <Pressable accessibilityRole="button" key={item.id} onPress={() => open(index)}>
               <Card style={styles.rankCard}>
                 <View style={[styles.rank, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}><Text style={[styles.rankNumber, { color: colors.primary }]}>{index + 1}</Text></View>
                 <View style={styles.rankCopy}>

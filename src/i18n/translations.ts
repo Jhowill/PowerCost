@@ -3,6 +3,7 @@ import { SupportedLocale } from '../types';
 type Dictionary = Record<string, string>;
 
 const pt: Dictionary = {
+  'settings.support': 'Suporte e contato', 'settings.linkError': 'Não foi possível abrir o link de suporte.',
   'legal.updated': 'Atualizado em {date}', 'settings.deleteAllData': 'Excluir todos os dados locais', 'settings.deleteAllTitle': 'Excluir todos os dados?', 'settings.deleteAllText': 'Esta ação apaga definitivamente cálculos, preferências e desbloqueios salvos neste aparelho.', 'settings.dataDeleted': 'Todos os dados locais foram excluídos.', 'settings.deleteAllError': 'Não foi possível excluir os dados. Tente novamente.',
   'ads.sponsored': 'Anúncio',
   'settings.adPrivacy': 'Opções de privacidade dos anúncios', 'ads.privacyUnavailable': 'As opções de privacidade não estão disponíveis neste dispositivo agora.',
@@ -97,6 +98,7 @@ const pt: Dictionary = {
 
 const en: Dictionary = {
   ...pt,
+  'settings.support': 'Support and contact', 'settings.linkError': 'The support link could not be opened.',
   'legal.updated': 'Updated on {date}', 'settings.deleteAllData': 'Delete all local data', 'settings.deleteAllTitle': 'Delete all data?', 'settings.deleteAllText': 'This permanently deletes calculations, preferences and unlocks saved on this device.', 'settings.dataDeleted': 'All local data has been deleted.', 'settings.deleteAllError': 'The data could not be deleted. Please try again.',
   'ads.sponsored': 'Sponsored',
   'settings.adPrivacy': 'Ad privacy options', 'ads.privacyUnavailable': 'Privacy options are not available on this device right now.',
@@ -140,6 +142,7 @@ const en: Dictionary = {
 
 const es: Dictionary = {
   ...en,
+  'settings.support': 'Soporte y contacto', 'settings.linkError': 'No se pudo abrir el enlace de soporte.',
   'legal.updated': 'Actualizado el {date}', 'settings.deleteAllData': 'Eliminar todos los datos locales', 'settings.deleteAllTitle': '¿Eliminar todos los datos?', 'settings.deleteAllText': 'Esta acción elimina definitivamente los cálculos, preferencias y desbloqueos guardados en este dispositivo.', 'settings.dataDeleted': 'Se eliminaron todos los datos locales.', 'settings.deleteAllError': 'No se pudieron eliminar los datos. Inténtalo de nuevo.',
   'ads.sponsored': 'Anuncio',
   'settings.adPrivacy': 'Opciones de privacidad de anuncios', 'ads.privacyUnavailable': 'Las opciones de privacidad no están disponibles en este dispositivo ahora.',
@@ -181,6 +184,7 @@ const es: Dictionary = {
 
 const fr: Dictionary = {
   ...en,
+  'settings.support': 'Assistance et contact', 'settings.linkError': 'Impossible d’ouvrir le lien d’assistance.',
   'legal.updated': 'Mis à jour le {date}', 'settings.deleteAllData': 'Supprimer toutes les données locales', 'settings.deleteAllTitle': 'Supprimer toutes les données ?', 'settings.deleteAllText': 'Cette action supprime définitivement les calculs, préférences et déverrouillages enregistrés sur cet appareil.', 'settings.dataDeleted': 'Toutes les données locales ont été supprimées.', 'settings.deleteAllError': 'Les données n’ont pas pu être supprimées. Réessayez.',
   'ads.sponsored': 'Publicité',
   'settings.adPrivacy': 'Options de confidentialité publicitaire', 'ads.privacyUnavailable': 'Les options de confidentialité ne sont pas disponibles sur cet appareil actuellement.',

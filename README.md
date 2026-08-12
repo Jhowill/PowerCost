@@ -34,6 +34,8 @@ npm run check
 npx expo export --platform web
 ```
 
+O projeto está associado ao EAS em [@jhowill/powercost](https://expo.dev/accounts/jhowill/projects/powercost). Os perfis `development`, `preview` e `production` estão definidos em `eas.json`.
+
 Para servir a exportação estática gerada em `dist/`:
 
 ```bash
@@ -49,6 +51,12 @@ npx eas-cli build --profile development
 ```
 
 Antes de publicar, configure as mensagens de privacidade no AdMob, revise as declarações das lojas em `docs/08_STORE_PRIVACY_DECLARATIONS.md` e hospede as rotas `/privacy` e `/terms` em HTTPS.
+
+URLs públicas atuais:
+
+- Política: https://github.com/Jhowill/PowerCost/blob/main/docs/PRIVACY_POLICY.md
+- Termos: https://github.com/Jhowill/PowerCost/blob/main/docs/TERMS_OF_USE.md
+- Suporte: https://github.com/Jhowill/PowerCost/issues
 
 ## Estrutura principal
 

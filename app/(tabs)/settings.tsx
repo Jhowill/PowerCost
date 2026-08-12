@@ -1,12 +1,13 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { Alert, Linking, StyleSheet, Text } from 'react-native';
 
 import { BannerAdSlot } from '../../src/components/BannerAdSlot';
 import { RewardedCard } from '../../src/components/RewardedCard';
 import { Button, Card, Field, Header, OptionModal, Page, SectionLabel, SettingRow } from '../../src/components/ui';
 import { useApp } from '../../src/context/AppContext';
+import { PUBLIC_LINKS } from '../../src/config/publicLinks';
 import { AppTheme, SupportedLocale } from '../../src/types';
 import { formatCurrency, formatCurrencySymbol, parseDecimal } from '../../src/utils/calculation';
 
@@ -73,6 +74,7 @@ export default function SettingsScreen() {
         <SettingRow label={t('settings.about')} onPress={() => Alert.alert(t('settings.about'), t('settings.aboutText'))} />
         <SettingRow label={t('settings.privacy')} onPress={() => router.push('/privacy')} />
         <SettingRow label={t('settings.terms')} onPress={() => router.push('/terms')} />
+        <SettingRow label={t('settings.support')} onPress={() => void Linking.openURL(PUBLIC_LINKS.support).catch(() => Alert.alert(t('settings.linkError')))} />
         <SettingRow label={t('settings.clearHistory')} onPress={confirmClear} danger />
         <SettingRow label={t('settings.deleteAllData')} onPress={confirmDeleteAll} danger />
         <SettingRow label={t('settings.version')} value={Constants.expoConfig?.version ?? '1.0.0'} />

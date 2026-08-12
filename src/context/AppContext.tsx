@@ -204,13 +204,13 @@ export function AppProvider({ children }: PropsWithChildren) {
   }, [ads.adFreeUntil, adsInitialized, hydrated, settings.hasSeenFirstResult]);
 
   useEffect(() => {
-    if (hydrated) void AsyncStorage.setItem(STORAGE.settings, JSON.stringify(settings));
+    if (hydrated) void AsyncStorage.setItem(STORAGE.settings, JSON.stringify(settings)).catch(() => undefined);
   }, [hydrated, settings]);
   useEffect(() => {
-    if (hydrated) void AsyncStorage.setItem(STORAGE.history, JSON.stringify(history));
+    if (hydrated) void AsyncStorage.setItem(STORAGE.history, JSON.stringify(history)).catch(() => undefined);
   }, [hydrated, history]);
   useEffect(() => {
-    if (hydrated) void AsyncStorage.setItem(STORAGE.ads, JSON.stringify(ads));
+    if (hydrated) void AsyncStorage.setItem(STORAGE.ads, JSON.stringify(ads)).catch(() => undefined);
   }, [ads, hydrated]);
 
   const resolvedTheme = settings.theme === 'system' ? (systemTheme === 'dark' ? 'dark' : 'light') : settings.theme;
@@ -292,6 +292,11 @@ export function AppProvider({ children }: PropsWithChildren) {
   };
 
   const adFreeActive = isActiveUntil(ads.adFreeUntil);
+  const openAdsPrivacyOptions = async () => {
+    const result = await showAdsPrivacyOptions();
+    setAdsInitialized(result.adsReady);
+    return result.opened;
+  };
   const maybeShowInterstitial = async () => {
     if (!settings.hasSeenFirstResult || adFreeActive || ads.completedCalculationsSinceLastInterstitial < 1) return;
     if (ads.lastInterstitialShownAt) {
@@ -327,7 +332,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setTheme,
     setDefaultTariff,
     unlockFeature,
-    openAdsPrivacyOptions: showAdsPrivacyOptions,
+    openAdsPrivacyOptions,
     maybeShowInterstitial,
     canShowBanner: adsInitialized && settings.hasSeenFirstResult && !adFreeActive,
     adFreeActive,

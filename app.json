@@ -2,6 +2,7 @@
   "expo": {
     "name": "PowerCost",
     "slug": "powercost",
+    "description": "Estimate the energy consumption and monthly cost of household appliances.",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/powercost-icon.png",
@@ -10,7 +11,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.powercost.app"
+      "bundleIdentifier": "com.powercost.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +23,13 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.powercost.app"
+      "package": "com.powercost.app",
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "output": "static",
@@ -44,7 +54,8 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 23
+            "minSdkVersion": 23,
+            "extraProguardRules": "-keep class com.google.android.gms.internal.consent_sdk.** { *; }"
           }
         }
       ],
@@ -61,6 +72,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "19206c9b-d0a2-43ae-a7c4-a25cd07a4344"
+      }
+    },
+    "owner": "jhowill"
   }
 }

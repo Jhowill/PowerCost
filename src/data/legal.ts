@@ -11,7 +11,7 @@ const privacy: Record<SupportedLocale, LegalDocument> = {
     title: 'Política de Privacidade',
     summary: 'Esta política explica como o PowerCost trata informações no aplicativo e por meio dos anúncios.',
     sections: [
-      { title: '1. Responsável e contato', paragraphs: ['O PowerCost é o responsável pelo tratamento descrito nesta política. Para solicitações de privacidade, use o contato de suporte do desenvolvedor exibido na página oficial do aplicativo na loja.'] },
+      { title: '1. Responsável e contato', paragraphs: ['O PowerCost é o responsável pelo tratamento descrito nesta política. Para solicitações de privacidade e suporte, use https://github.com/Jhowill/PowerCost/issues.'] },
       { title: '2. Dados mantidos no aparelho', paragraphs: ['Cálculos de consumo, histórico, tarifa, idioma, tema e benefícios temporários são armazenados localmente no aparelho. O PowerCost não possui conta de usuário nem envia esse histórico para um servidor próprio.'] },
       { title: '3. Dados usados por anúncios', paragraphs: ['O app usa o Google Mobile Ads SDK. Conforme a configuração, o Google e parceiros podem tratar endereço IP, identificadores do aparelho ou de publicidade, interações com anúncios e com o app, diagnósticos e localização aproximada inferida do IP.', 'Esses dados são tratados segundo as políticas do Google e as escolhas de consentimento disponíveis para a sua região.'] },
       { title: '4. Consentimento e rastreamento', paragraphs: ['Quando exigido, o app apresenta o formulário de consentimento do Google antes de inicializar a medição de anúncios. No iOS, o rastreamento entre apps depende também da permissão App Tracking Transparency. Negar personalização não impede o uso do app.'] },
@@ -26,7 +26,7 @@ const privacy: Record<SupportedLocale, LegalDocument> = {
     title: 'Privacy Policy',
     summary: 'This policy explains how PowerCost handles information in the app and through advertising.',
     sections: [
-      { title: '1. Controller and contact', paragraphs: ['PowerCost is responsible for the processing described here. For privacy requests, use the developer support contact shown on the app’s official store listing.'] },
+      { title: '1. Controller and contact', paragraphs: ['PowerCost is responsible for the processing described here. For privacy and support requests, use https://github.com/Jhowill/PowerCost/issues.'] },
       { title: '2. Data kept on the device', paragraphs: ['Usage estimates, history, rate, language, theme and temporary benefits are stored locally. PowerCost has no user accounts and does not send this history to its own server.'] },
       { title: '3. Advertising data', paragraphs: ['The app uses the Google Mobile Ads SDK. Depending on configuration, Google and its partners may process IP address, device or advertising identifiers, ad and app interactions, diagnostics, and approximate location inferred from IP.', 'This data is handled under Google policies and the consent choices available in your region.'] },
       { title: '4. Consent and tracking', paragraphs: ['Where required, the Google consent form is shown before ad measurement is initialized. On iOS, cross-app tracking also depends on App Tracking Transparency permission. Refusing personalization does not prevent use of the app.'] },
@@ -41,7 +41,7 @@ const privacy: Record<SupportedLocale, LegalDocument> = {
     title: 'Política de Privacidad',
     summary: 'Esta política explica cómo PowerCost trata la información en la aplicación y mediante la publicidad.',
     sections: [
-      { title: '1. Responsable y contacto', paragraphs: ['PowerCost es responsable del tratamiento descrito aquí. Para solicitudes de privacidad, usa el contacto de soporte del desarrollador que aparece en la ficha oficial de la tienda.'] },
+      { title: '1. Responsable y contacto', paragraphs: ['PowerCost es responsable del tratamiento descrito aquí. Para solicitudes de privacidad y soporte, usa https://github.com/Jhowill/PowerCost/issues.'] },
       { title: '2. Datos guardados en el dispositivo', paragraphs: ['Cálculos, historial, tarifa, idioma, tema y beneficios temporales se guardan localmente. PowerCost no tiene cuentas ni envía este historial a un servidor propio.'] },
       { title: '3. Datos publicitarios', paragraphs: ['La aplicación usa Google Mobile Ads SDK. Según la configuración, Google y sus socios pueden tratar la dirección IP, identificadores del dispositivo o publicitarios, interacciones, diagnósticos y ubicación aproximada inferida de la IP.', 'Estos datos se tratan según las políticas de Google y las opciones de consentimiento disponibles en tu región.'] },
       { title: '4. Consentimiento y seguimiento', paragraphs: ['Cuando se requiere, el formulario de Google se muestra antes de iniciar la medición de anuncios. En iOS, el seguimiento entre aplicaciones también depende del permiso App Tracking Transparency. Rechazar la personalización no impide usar la aplicación.'] },
@@ -56,7 +56,7 @@ const privacy: Record<SupportedLocale, LegalDocument> = {
     title: 'Politique de confidentialité',
     summary: 'Cette politique explique comment PowerCost traite les informations dans l’application et via la publicité.',
     sections: [
-      { title: '1. Responsable et contact', paragraphs: ['PowerCost est responsable du traitement décrit ici. Pour toute demande, utilisez le contact d’assistance du développeur indiqué sur la fiche officielle de l’application.'] },
+      { title: '1. Responsable et contact', paragraphs: ['PowerCost est responsable du traitement décrit ici. Pour toute demande de confidentialité ou d’assistance, utilisez https://github.com/Jhowill/PowerCost/issues.'] },
       { title: '2. Données conservées sur l’appareil', paragraphs: ['Les calculs, l’historique, le tarif, la langue, le thème et les avantages temporaires sont stockés localement. PowerCost ne crée pas de compte et n’envoie pas cet historique à son propre serveur.'] },
       { title: '3. Données publicitaires', paragraphs: ['L’application utilise Google Mobile Ads SDK. Selon la configuration, Google et ses partenaires peuvent traiter l’adresse IP, des identifiants d’appareil ou publicitaires, les interactions, les diagnostics et une position approximative déduite de l’IP.', 'Ces données sont traitées selon les règles de Google et vos choix de consentement régionaux.'] },
       { title: '4. Consentement et suivi', paragraphs: ['Lorsque requis, le formulaire Google est présenté avant l’initialisation de la mesure publicitaire. Sur iOS, le suivi entre applications dépend aussi de l’autorisation App Tracking Transparency. Refuser la personnalisation n’empêche pas l’utilisation de l’app.'] },
@@ -77,7 +77,7 @@ const terms: Record<SupportedLocale, LegalDocument> = {
     { title: '4. Anúncios e recompensas', paragraphs: ['O app pode exibir banners, anúncios nativos, intersticiais, de abertura e premiados. Recompensas são temporárias, não possuem valor monetário e podem ficar indisponíveis por rede, região ou provedor. Anúncios premiados são voluntários.'] },
     { title: '5. Disponibilidade e mudanças', paragraphs: ['O serviço é fornecido no estado disponível. Recursos podem mudar ou ser interrompidos para manutenção, segurança ou conformidade. Estes termos podem ser atualizados e a data da versão será exibida.'] },
     { title: '6. Limitação', paragraphs: ['Na extensão permitida por lei, o responsável não responde por decisões tomadas apenas com base em estimativas, indisponibilidade ou conteúdo de terceiros. Direitos obrigatórios do consumidor permanecem preservados.'] },
-    { title: '7. Contato', paragraphs: ['Para questões sobre estes termos, use o contato de suporte do desenvolvedor exibido na página oficial do aplicativo na loja.'] },
+    { title: '7. Contato', paragraphs: ['Para questões sobre estes termos, use https://github.com/Jhowill/PowerCost/issues.'] },
   ] },
   'en-US': { title: 'Terms of Use', summary: 'By using PowerCost, you agree to these terms.', sections: [
     { title: '1. Purpose', paragraphs: ['PowerCost provides educational estimates of energy use and cost based on information entered by the user.'] },
@@ -86,7 +86,7 @@ const terms: Record<SupportedLocale, LegalDocument> = {
     { title: '4. Ads and rewards', paragraphs: ['The app may display banner, native, interstitial, app-open and rewarded ads. Rewards are temporary, have no monetary value and may be unavailable due to network, region or provider. Rewarded ads are voluntary.'] },
     { title: '5. Availability and changes', paragraphs: ['The service is provided as available. Features may change or stop for maintenance, security or compliance. These terms may be updated and the version date will be shown.'] },
     { title: '6. Limitation', paragraphs: ['To the extent allowed by law, the provider is not liable for decisions based only on estimates, unavailability or third-party content. Mandatory consumer rights remain unaffected.'] },
-    { title: '7. Contact', paragraphs: ['For questions about these terms, use the developer support contact on the app’s official store listing.'] },
+    { title: '7. Contact', paragraphs: ['For questions about these terms, use https://github.com/Jhowill/PowerCost/issues.'] },
   ] },
   'es-ES': { title: 'Términos de Uso', summary: 'Al usar PowerCost, aceptas estos términos.', sections: [
     { title: '1. Finalidad', paragraphs: ['PowerCost ofrece estimaciones educativas de consumo y costo basadas en los datos introducidos.'] },
@@ -95,7 +95,7 @@ const terms: Record<SupportedLocale, LegalDocument> = {
     { title: '4. Anuncios y recompensas', paragraphs: ['La aplicación puede mostrar banners, anuncios nativos, intersticiales, de apertura y premiados. Las recompensas son temporales, no tienen valor monetario y pueden no estar disponibles. Los anuncios premiados son voluntarios.'] },
     { title: '5. Disponibilidad y cambios', paragraphs: ['El servicio se ofrece según disponibilidad. Las funciones pueden cambiar por mantenimiento, seguridad o cumplimiento. Se mostrará la fecha de la versión.'] },
     { title: '6. Limitación', paragraphs: ['En la medida permitida por la ley, el responsable no responde por decisiones basadas solo en estimaciones, indisponibilidad o contenido de terceros. Los derechos obligatorios del consumidor se mantienen.'] },
-    { title: '7. Contacto', paragraphs: ['Para consultas, usa el contacto de soporte del desarrollador indicado en la ficha oficial de la tienda.'] },
+    { title: '7. Contacto', paragraphs: ['Para consultas, usa https://github.com/Jhowill/PowerCost/issues.'] },
   ] },
   'fr-FR': { title: 'Conditions d’utilisation', summary: 'En utilisant PowerCost, vous acceptez ces conditions.', sections: [
     { title: '1. Objet', paragraphs: ['PowerCost fournit des estimations pédagogiques de consommation et de coût selon les données saisies.'] },
@@ -104,7 +104,7 @@ const terms: Record<SupportedLocale, LegalDocument> = {
     { title: '4. Publicités et récompenses', paragraphs: ['L’app peut afficher des bannières, annonces natives, interstitielles, d’ouverture et récompensées. Les avantages sont temporaires, sans valeur monétaire et parfois indisponibles. Les annonces récompensées sont volontaires.'] },
     { title: '5. Disponibilité et modifications', paragraphs: ['Le service est fourni selon disponibilité. Les fonctions peuvent changer pour maintenance, sécurité ou conformité. La date de version sera affichée.'] },
     { title: '6. Limitation', paragraphs: ['Dans les limites légales, le responsable ne répond pas des décisions fondées uniquement sur les estimations, de l’indisponibilité ou du contenu tiers. Les droits impératifs du consommateur restent applicables.'] },
-    { title: '7. Contact', paragraphs: ['Pour toute question, utilisez le contact d’assistance du développeur indiqué sur la fiche officielle de l’application.'] },
+    { title: '7. Contact', paragraphs: ['Pour toute question, utilisez https://github.com/Jhowill/PowerCost/issues.'] },
   ] },
 };
 

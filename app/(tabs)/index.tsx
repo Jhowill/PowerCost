@@ -42,7 +42,7 @@ export default function HomeScreen() {
       </View>
 
       {last ? (
-        <Pressable onPress={openLast}>
+        <Pressable accessibilityRole="button" onPress={openLast}>
           <Card style={styles.lastCard}>
             <View style={styles.lastCopy}>
               <Text style={[styles.tipTitle, { color: colors.text }]}>{t('home.lastTitle')}</Text>

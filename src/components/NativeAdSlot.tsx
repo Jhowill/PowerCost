@@ -30,6 +30,7 @@ export function NativeAdSlot() {
   const [nativeAd, setNativeAd] = useState<NativeAdLike | null>(null);
 
   useEffect(() => {
+    setNativeAd(null);
     if (!canShowBanner || !nativeAdsAvailable) return;
     let mounted = true;
     let loadedAd: NativeAdLike | null = null;

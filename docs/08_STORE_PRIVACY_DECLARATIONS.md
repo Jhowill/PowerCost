@@ -42,11 +42,11 @@ Antes do envio:
 3. Não indicar rastreamento se a build publicada estiver tecnicamente configurada para anúncios não personalizados e sem rastreamento; validar isso em aparelho e no painel do provedor.
 4. Garantir que a resposta da App Privacy seja coerente com a política pública e com o formulário UMP exibido.
 
-## URLs e contato obrigatórios
+## URLs e contato
 
-- Publicar a exportação web em HTTPS e usar a URL pública terminada em `/privacy` como política de privacidade.
-- Recomenda-se também publicar e informar `/terms` e uma página de suporte.
-- Substituir a referência genérica ao contato da ficha da loja por um e-mail ou URL oficial antes da submissão.
+- Usar as URLs públicas de política, termos e suporte registradas em `docs/09_STORE_LISTING_METADATA.md`.
+- Recomenda-se migrar futuramente para as rotas `/privacy` e `/terms` em domínio próprio.
+- A página pública de issues funciona como suporte inicial. Recomenda-se adicionar também um e-mail oficial antes da submissão.
 - Manter a data da política e o conteúdo dos quatro idiomas sincronizados.
 
 ## Teste de aceite de privacidade

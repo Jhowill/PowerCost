@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import Head from 'expo-router/head';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -12,22 +13,28 @@ export function LegalDocumentScreen({ type }: { type: LegalDocumentType }) {
   const document = getLegalDocument(type, settings.locale);
 
   return (
-    <Page contentStyle={styles.page}>
-      <Header title={document.title} subtitle={document.summary} back onBack={() => router.back()} />
-      <Text style={[styles.updated, { color: colors.textMuted }]}>
-        {t('legal.updated', { date: LEGAL_UPDATED_AT })}
-      </Text>
-      {document.sections.map((section) => (
-        <Card key={section.title} style={styles.section}>
-          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
-          <View style={styles.paragraphs}>
-            {section.paragraphs.map((paragraph, index) => (
-              <Text key={`${section.title}-${index}`} style={[styles.paragraph, { color: colors.textMuted }]}>{paragraph}</Text>
-            ))}
-          </View>
-        </Card>
-      ))}
-    </Page>
+    <>
+      <Head>
+        <title>{document.title} | PowerCost</title>
+        <meta name="description" content={document.summary} />
+      </Head>
+      <Page contentStyle={styles.page}>
+        <Header title={document.title} subtitle={document.summary} back onBack={() => router.back()} />
+        <Text style={[styles.updated, { color: colors.textMuted }]}>
+          {t('legal.updated', { date: LEGAL_UPDATED_AT })}
+        </Text>
+        {document.sections.map((section) => (
+          <Card key={section.title} style={styles.section}>
+            <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
+            <View style={styles.paragraphs}>
+              {section.paragraphs.map((paragraph, index) => (
+                <Text key={`${section.title}-${index}`} style={[styles.paragraph, { color: colors.textMuted }]}>{paragraph}</Text>
+              ))}
+            </View>
+          </Card>
+        ))}
+      </Page>
+    </>
   );
 }
 

@@ -27,16 +27,22 @@ Data da revisão: 12 de agosto de 2026
 - Política de Privacidade e Termos de Uso completos disponíveis dentro do app em quatro idiomas.
 - Rotas web `/privacy` e `/terms` prontas para publicação estática em HTTPS.
 - Exclusão integral dos dados locais disponível nos Ajustes, com confirmação destrutiva e tratamento de falha.
+- Permissões Android de sobreposição e armazenamento externo bloqueadas explicitamente no manifesto final.
+- Backup Android desativado para impedir a restauração inesperada de dados locais apagados.
+- SDK de anúncios reinicializado quando uma nova escolha de privacidade passa a permitir solicitações.
+- Classificação máxima de conteúdo publicitário definida como PG e app configurado como não direcionado a crianças; a condição individual de idade permanece a cargo do consentimento regional.
+- Configuração ProGuard do UMP preservada em builds Android otimizadas.
+- Declaração de criptografia não isenta configurada como falsa no iOS.
 
 ## Pendências obrigatórias antes da submissão
 
-1. Publicar as rotas prontas `/privacy` e `/terms` em um domínio HTTPS e cadastrar a URL final na App Store Connect, Play Console e página de suporte. O conteúdo no app não substitui a URL pública exigida pelas lojas.
+1. Cadastrar nas lojas as URLs públicas registradas em `docs/09_STORE_LISTING_METADATA.md`. Migrar para domínio próprio é recomendável, mas não bloqueia o primeiro envio enquanto os documentos do GitHub estiverem públicos.
 2. Configurar no painel do AdMob as mensagens UMP para EEA/Reino Unido, estados americanos aplicáveis e, no iOS, a mensagem explicativa de ATT quando rastreamento/personalização for utilizado.
 3. Preencher o Data Safety do Google Play considerando também o Google Mobile Ads SDK. Revisar pelo menos identificadores do dispositivo, interações com o produto, diagnósticos e endereço IP/localização aproximada conforme a configuração efetiva do SDK.
 4. Preencher o App Privacy da Apple de forma coerente com o AdMob e com a decisão sobre anúncios personalizados/rastreamento.
 5. Definir o público-alvo como não direcionado a crianças, salvo se o app for adaptado integralmente às políticas Families/Kids e os anúncios forem configurados para isso.
 6. Testar consentimento, ATT, banner, nativo, intersticial, premiado e App Open em builds EAS de release em aparelhos físicos Android e iOS. Expo Go não contém o módulo nativo do AdMob.
-7. Informar um e-mail ou URL de suporte público do responsável pelo app. A política usa temporariamente o contato exibido na ficha da loja para não publicar uma identidade inventada.
+7. Recomenda-se informar também um e-mail público do responsável. Enquanto ele não for fornecido, o repositório usa a página pública de suporte por issues.
 
 ## Dependências
 

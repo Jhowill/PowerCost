@@ -19,17 +19,39 @@ let fullscreenAdShowing = false;
 let lastAppOpenShownAt = 0;
 let adsReady = false;
 
+type MobileAdsModule = {
+  default: () => {
+    initialize: () => Promise<unknown>;
+    setRequestConfiguration: (configuration: {
+      maxAdContentRating: string;
+      tagForChildDirectedTreatment: boolean;
+    }) => Promise<unknown>;
+  };
+  AdsConsent: {
+    gatherConsent: () => Promise<{ canRequestAds: boolean }>;
+    showPrivacyOptionsForm: () => Promise<{ canRequestAds: boolean }>;
+  };
+};
+
+const startMobileAds = async (ads: MobileAdsModule) => {
+  if (!adsReady) {
+    const mobileAds = ads.default();
+    await mobileAds.setRequestConfiguration({
+      maxAdContentRating: 'PG',
+      tagForChildDirectedTreatment: false,
+    });
+    await mobileAds.initialize();
+  }
+  adsReady = true;
+};
+
 export const initializeAds = async (): Promise<boolean> => {
   if (!nativeAdsAvailable) return true;
   try {
-    const ads = require('react-native-google-mobile-ads') as unknown as {
-      default: () => { initialize: () => Promise<unknown> };
-      AdsConsent: { gatherConsent: () => Promise<{ canRequestAds: boolean }> };
-    };
+    const ads = require('react-native-google-mobile-ads') as unknown as MobileAdsModule;
     const consent = await ads.AdsConsent.gatherConsent();
     if (!consent.canRequestAds) return false;
-    await ads.default().initialize();
-    adsReady = true;
+    await startMobileAds(ads);
     return true;
   } catch {
     // Falhas de consentimento ou anúncios nunca bloqueiam o app.
@@ -157,16 +179,15 @@ export const showAppOpenAd = async (): Promise<boolean> => {
   }
 };
 
-export const showAdsPrivacyOptions = async (): Promise<boolean> => {
-  if (!nativeAdsAvailable) return false;
+export const showAdsPrivacyOptions = async (): Promise<{ opened: boolean; adsReady: boolean }> => {
+  if (!nativeAdsAvailable) return { opened: false, adsReady };
   try {
-    const ads = require('react-native-google-mobile-ads') as unknown as {
-      AdsConsent: { showPrivacyOptionsForm: () => Promise<{ canRequestAds: boolean }> };
-    };
+    const ads = require('react-native-google-mobile-ads') as unknown as MobileAdsModule;
     const consent = await ads.AdsConsent.showPrivacyOptionsForm();
-    adsReady = consent.canRequestAds;
-    return true;
+    if (consent.canRequestAds) await startMobileAds(ads);
+    else adsReady = false;
+    return { opened: true, adsReady };
   } catch {
-    return false;
+    return { opened: false, adsReady };
   }
 };

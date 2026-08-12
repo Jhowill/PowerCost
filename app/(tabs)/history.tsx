@@ -57,7 +57,7 @@ export default function HistoryScreen() {
           </Card>
           {history.map((item) => (
             <Card key={item.id} style={styles.item}>
-              <Pressable onPress={() => open(item.id)} style={styles.itemMain}>
+              <Pressable accessibilityRole="button" onPress={() => open(item.id)} style={styles.itemMain}>
                 <View style={styles.itemCopy}>
                   <Text style={[styles.itemName, { color: colors.text }]}>{item.input.applianceNameKey ? t(item.input.applianceNameKey) : item.input.applianceName}</Text>
                   <Text style={[styles.itemMeta, { color: colors.textMuted }]}>{formatDate(item.createdAt, settings.locale)} • {formatNumber(item.result.consumptionKwhMonth, settings.locale)} kWh</Text>
