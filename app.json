@@ -1,0 +1,64 @@
+{
+  "expo": {
+    "name": "PowerCost",
+    "slug": "powercost",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/powercost-icon.png",
+    "scheme": "powercost",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.powercost.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#07130D",
+        "foregroundImage": "./assets/images/powercost-icon.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.powercost.app"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/powercost-icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/powercost-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F5FAF4",
+          "dark": {
+            "backgroundColor": "#07130D"
+          }
+        }
+      ],
+      "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 23
+          }
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
