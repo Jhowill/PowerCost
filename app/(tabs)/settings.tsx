@@ -13,7 +13,7 @@ import { formatCurrency, formatCurrencySymbol, parseDecimal } from '../../src/ut
 const localeNames: Record<SupportedLocale, string> = { 'pt-BR': 'Português', 'en-US': 'English', 'es-ES': 'Español', 'fr-FR': 'Français' };
 
 export default function SettingsScreen() {
-  const { colors, t, settings, ads, setLocale, setTheme, setDefaultTariff, clearHistory } = useApp();
+  const { colors, t, settings, ads, setLocale, setTheme, setDefaultTariff, clearHistory, openAdsPrivacyOptions } = useApp();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [tariffText, setTariffText] = useState(String(settings.defaultTariffPerKwh ?? 0.9).replace('.', ','));
@@ -48,6 +48,14 @@ export default function SettingsScreen() {
       <SectionLabel>{t('settings.ads')}</SectionLabel>
       <RewardedCard title={t('settings.removeAds')} duration={t('unlock.adFreeTime')} feature="ad_free" activeUntil={ads.adFreeUntil} />
       <Button label={t('unlock.title')} onPress={() => router.push('/unlock')} variant="outline" icon="gift-outline" />
+      <Button
+        label={t('settings.adPrivacy')}
+        onPress={() => void openAdsPrivacyOptions().then((success) => {
+          if (!success) Alert.alert(t('ads.privacyUnavailable'));
+        })}
+        variant="ghost"
+        icon="shield-checkmark-outline"
+      />
       <BannerAdSlot />
 
       <SectionLabel>{t('settings.other')}</SectionLabel>

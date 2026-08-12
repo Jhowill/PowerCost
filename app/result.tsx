@@ -40,7 +40,6 @@ export default function ResultScreen() {
     const status = saveCurrent();
     if (status === 'saved') {
       Alert.alert(t('result.saved'));
-      void maybeShowInterstitial();
     } else if (status === 'limit') {
       Alert.alert(t('history.limit'), t('history.unlock'), [
         { text: t('common.cancel'), style: 'cancel' },

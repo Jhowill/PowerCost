@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
-import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState, useColorScheme } from 'react-native';
 
 import { translate } from '../i18n/translations';
-import { initializeAds, showAppOpenAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
+import { initializeAds, showAdsPrivacyOptions, showAppOpenAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
 import { palettes } from '../theme';
 import {
   AdsState,
@@ -88,6 +88,7 @@ type AppContextValue = {
   setTheme: (theme: AppTheme) => void;
   setDefaultTariff: (value: number) => void;
   unlockFeature: (feature: RewardedFeature) => Promise<boolean>;
+  openAdsPrivacyOptions: () => Promise<boolean>;
   maybeShowInterstitial: () => Promise<void>;
   canShowBanner: boolean;
   adFreeActive: boolean;
@@ -107,12 +108,61 @@ const safeParse = <T,>(raw: string | null, fallback: T): T => {
   }
 };
 
+const normalizeSettings = (raw: string | null): AppSettings => {
+  const value = safeParse<Partial<AppSettings>>(raw, {});
+  const locale = ['pt-BR', 'en-US', 'es-ES', 'fr-FR'].includes(value.locale ?? '') ? value.locale as SupportedLocale : DEFAULT_SETTINGS.locale;
+  const theme = ['system', 'light', 'dark'].includes(value.theme ?? '') ? value.theme as AppTheme : DEFAULT_SETTINGS.theme;
+  const currency = ['BRL', 'USD', 'EUR'].includes(value.currency ?? '') ? value.currency as CurrencyCode : CURRENCY_BY_LOCALE[locale];
+  return {
+    ...DEFAULT_SETTINGS,
+    ...value,
+    schemaVersion: 1,
+    locale,
+    theme,
+    currency,
+    defaultTariffPerKwh: typeof value.defaultTariffPerKwh === 'number' && value.defaultTariffPerKwh > 0 ? value.defaultTariffPerKwh : DEFAULT_SETTINGS.defaultTariffPerKwh,
+    hasSeenFirstResult: Boolean(value.hasSeenFirstResult),
+  };
+};
+
+const normalizeAds = (raw: string | null): AdsState => {
+  const value = safeParse<Partial<AdsState>>(raw, {});
+  return {
+    ...DEFAULT_ADS,
+    ...value,
+    schemaVersion: 1,
+    tipsUnlockedSimulationIds: Array.isArray(value.tipsUnlockedSimulationIds)
+      ? value.tipsUnlockedSimulationIds.filter((id): id is string => typeof id === 'string')
+      : [],
+    completedCalculationsSinceLastInterstitial: typeof value.completedCalculationsSinceLastInterstitial === 'number'
+      ? Math.max(0, value.completedCalculationsSinceLastInterstitial)
+      : 0,
+  };
+};
+
+const isSavedSimulation = (value: unknown): value is SavedSimulation => {
+  if (!value || typeof value !== 'object') return false;
+  const item = value as Partial<SavedSimulation>;
+  if (typeof item.id !== 'string' || typeof item.createdAt !== 'string' || Number.isNaN(Date.parse(item.createdAt))) return false;
+  if (!item.input || typeof item.input !== 'object' || !item.result || typeof item.result !== 'object') return false;
+  return typeof item.input.applianceName === 'string'
+    && typeof item.input.powerWatts === 'number'
+    && typeof item.input.hoursPerDay === 'number'
+    && typeof item.input.daysPerMonth === 'number'
+    && typeof item.input.tariffPerKwh === 'number'
+    && typeof item.result.costPerMonth === 'number'
+    && typeof item.result.consumptionKwhMonth === 'number';
+};
+
+const normalizeHistory = (raw: string | null): SavedSimulation[] => {
+  const value = safeParse<unknown>(raw, []);
+  return Array.isArray(value) ? value.filter(isSavedSimulation) : [];
+};
+
 export function AppProvider({ children }: PropsWithChildren) {
   const systemTheme = useColorScheme();
   const [hydrated, setHydrated] = useState(false);
   const [adsInitialized, setAdsInitialized] = useState(false);
-  const launchAdEligible = useRef(false);
-  const launchAdAttempted = useRef(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [ads, setAds] = useState<AdsState>(DEFAULT_ADS);
   const [history, setHistory] = useState<SavedSimulation[]>([]);
@@ -120,29 +170,29 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [currentSimulation, setCurrentSimulation] = useState<SavedSimulation | null>(null);
 
   useEffect(() => {
-    void initializeAds().finally(() => setAdsInitialized(true));
+    void initializeAds().then(setAdsInitialized);
     void Promise.all([
       AsyncStorage.getItem(STORAGE.settings),
       AsyncStorage.getItem(STORAGE.history),
       AsyncStorage.getItem(STORAGE.ads),
     ]).then(([settingsRaw, historyRaw, adsRaw]) => {
-      const loadedSettings = safeParse(settingsRaw, DEFAULT_SETTINGS);
-      launchAdEligible.current = loadedSettings.hasSeenFirstResult;
+      const loadedSettings = normalizeSettings(settingsRaw);
       setSettings(loadedSettings);
-      setHistory(safeParse(historyRaw, []));
-      setAds(safeParse(adsRaw, DEFAULT_ADS));
+      setHistory(normalizeHistory(historyRaw));
+      setAds(normalizeAds(adsRaw));
       setDraft(emptyDraft(loadedSettings.defaultTariffPerKwh ?? 0.9));
+    }).catch(() => {
+      setSettings(DEFAULT_SETTINGS);
+      setHistory([]);
+      setAds(DEFAULT_ADS);
+      setDraft(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
+    }).finally(() => {
       setHydrated(true);
     });
   }, []);
 
   useEffect(() => {
     if (!hydrated || !adsInitialized) return;
-
-    if (!launchAdAttempted.current) {
-      launchAdAttempted.current = true;
-      if (launchAdEligible.current && !isActiveUntil(ads.adFreeUntil)) void showAppOpenAd();
-    }
 
     const subscription = AppState.addEventListener('change', (nextState) => {
       if (nextState === 'active' && settings.hasSeenFirstResult && !isActiveUntil(ads.adFreeUntil)) {
@@ -267,15 +317,16 @@ export function AppProvider({ children }: PropsWithChildren) {
     setTheme,
     setDefaultTariff,
     unlockFeature,
+    openAdsPrivacyOptions: showAdsPrivacyOptions,
     maybeShowInterstitial,
-    canShowBanner: settings.hasSeenFirstResult && !adFreeActive,
+    canShowBanner: adsInitialized && settings.hasSeenFirstResult && !adFreeActive,
     adFreeActive,
     expandedComparisonActive: isActiveUntil(ads.expandedComparisonUntil),
     extraHistoryActive,
     whatIfActive: isActiveUntil(ads.whatIfUnlockedUntil),
   // Functions are intentionally regenerated with the current localized state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [hydrated, settings, ads, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive]);
+  }), [hydrated, adsInitialized, settings, ads, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
