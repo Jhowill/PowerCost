@@ -19,6 +19,8 @@ function Navigation() {
         <Stack.Screen name="result" />
         <Stack.Screen name="compare" />
         <Stack.Screen name="unlock" />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="terms" />
       </Stack>
     </>
   );

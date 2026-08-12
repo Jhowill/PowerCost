@@ -24,15 +24,19 @@ Data da revisão: 12 de agosto de 2026
 - Intersticial removido da ação de salvar; permanece somente em pausas naturais do fluxo.
 - Hidratação local agora possui fallback para falha do AsyncStorage.
 - Dados persistidos antigos ou corrompidos são normalizados antes do uso.
+- Política de Privacidade e Termos de Uso completos disponíveis dentro do app em quatro idiomas.
+- Rotas web `/privacy` e `/terms` prontas para publicação estática em HTTPS.
+- Exclusão integral dos dados locais disponível nos Ajustes, com confirmação destrutiva e tratamento de falha.
 
 ## Pendências obrigatórias antes da submissão
 
-1. Publicar uma política de privacidade completa em HTTPS e colocar a URL na App Store Connect, Play Console e dentro do app. O resumo local atual não substitui uma política pública.
+1. Publicar as rotas prontas `/privacy` e `/terms` em um domínio HTTPS e cadastrar a URL final na App Store Connect, Play Console e página de suporte. O conteúdo no app não substitui a URL pública exigida pelas lojas.
 2. Configurar no painel do AdMob as mensagens UMP para EEA/Reino Unido, estados americanos aplicáveis e, no iOS, a mensagem explicativa de ATT quando rastreamento/personalização for utilizado.
 3. Preencher o Data Safety do Google Play considerando também o Google Mobile Ads SDK. Revisar pelo menos identificadores do dispositivo, interações com o produto, diagnósticos e endereço IP/localização aproximada conforme a configuração efetiva do SDK.
 4. Preencher o App Privacy da Apple de forma coerente com o AdMob e com a decisão sobre anúncios personalizados/rastreamento.
 5. Definir o público-alvo como não direcionado a crianças, salvo se o app for adaptado integralmente às políticas Families/Kids e os anúncios forem configurados para isso.
 6. Testar consentimento, ATT, banner, nativo, intersticial, premiado e App Open em builds EAS de release em aparelhos físicos Android e iOS. Expo Go não contém o módulo nativo do AdMob.
+7. Informar um e-mail ou URL de suporte público do responsável pelo app. A política usa temporariamente o contato exibido na ficha da loja para não publicar uma identidade inventada.
 
 ## Dependências
 

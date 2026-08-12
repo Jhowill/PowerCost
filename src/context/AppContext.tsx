@@ -83,6 +83,7 @@ type AppContextValue = {
   saveCurrent: () => SaveResult;
   deleteSimulation: (id: string) => void;
   clearHistory: () => void;
+  clearAllLocalData: () => Promise<void>;
   isCurrentSaved: boolean;
   setLocale: (locale: SupportedLocale) => void;
   setTheme: (theme: AppTheme) => void;
@@ -254,6 +255,14 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   const deleteSimulation = (id: string) => setHistory((items) => items.filter((item) => item.id !== id));
   const clearHistory = () => setHistory([]);
+  const clearAllLocalData = async () => {
+    await AsyncStorage.multiRemove(Object.values(STORAGE));
+    setSettings(DEFAULT_SETTINGS);
+    setAds(DEFAULT_ADS);
+    setHistory([]);
+    setCurrentSimulation(null);
+    setDraft(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
+  };
 
   const setLocale = (locale: SupportedLocale) => {
     setSettings((value) => ({ ...value, locale, currency: CURRENCY_BY_LOCALE[locale] }));
@@ -312,6 +321,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     saveCurrent,
     deleteSimulation,
     clearHistory,
+    clearAllLocalData,
     isCurrentSaved: Boolean(currentSimulation && history.some((item) => item.id === currentSimulation.id)),
     setLocale,
     setTheme,

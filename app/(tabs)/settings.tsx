@@ -13,7 +13,7 @@ import { formatCurrency, formatCurrencySymbol, parseDecimal } from '../../src/ut
 const localeNames: Record<SupportedLocale, string> = { 'pt-BR': 'Português', 'en-US': 'English', 'es-ES': 'Español', 'fr-FR': 'Français' };
 
 export default function SettingsScreen() {
-  const { colors, t, settings, ads, setLocale, setTheme, setDefaultTariff, clearHistory, openAdsPrivacyOptions } = useApp();
+  const { colors, t, settings, ads, setLocale, setTheme, setDefaultTariff, clearHistory, clearAllLocalData, openAdsPrivacyOptions } = useApp();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [tariffText, setTariffText] = useState(String(settings.defaultTariffPerKwh ?? 0.9).replace('.', ','));
@@ -30,6 +30,16 @@ export default function SettingsScreen() {
   const confirmClear = () => Alert.alert(t('history.clearTitle'), t('history.clearText'), [
     { text: t('common.cancel'), style: 'cancel' },
     { text: t('history.clear'), style: 'destructive', onPress: clearHistory },
+  ]);
+  const confirmDeleteAll = () => Alert.alert(t('settings.deleteAllTitle'), t('settings.deleteAllText'), [
+    { text: t('common.cancel'), style: 'cancel' },
+    {
+      text: t('settings.deleteAllData'),
+      style: 'destructive',
+      onPress: () => void clearAllLocalData()
+        .then(() => Alert.alert(t('settings.dataDeleted')))
+        .catch(() => Alert.alert(t('settings.deleteAllError'))),
+    },
   ]);
   const themeLabel = settings.theme === 'system' ? t('settings.system') : settings.theme === 'light' ? t('settings.light') : t('settings.dark');
 
@@ -61,9 +71,10 @@ export default function SettingsScreen() {
       <SectionLabel>{t('settings.other')}</SectionLabel>
       <Card style={styles.group}>
         <SettingRow label={t('settings.about')} onPress={() => Alert.alert(t('settings.about'), t('settings.aboutText'))} />
-        <SettingRow label={t('settings.privacy')} onPress={() => Alert.alert(t('settings.privacy'), t('settings.privacyText'))} />
-        <SettingRow label={t('settings.terms')} onPress={() => Alert.alert(t('settings.terms'), t('settings.termsText'))} />
+        <SettingRow label={t('settings.privacy')} onPress={() => router.push('/privacy')} />
+        <SettingRow label={t('settings.terms')} onPress={() => router.push('/terms')} />
         <SettingRow label={t('settings.clearHistory')} onPress={confirmClear} danger />
+        <SettingRow label={t('settings.deleteAllData')} onPress={confirmDeleteAll} danger />
         <SettingRow label={t('settings.version')} value={Constants.expoConfig?.version ?? '1.0.0'} />
       </Card>
       <OptionModal
