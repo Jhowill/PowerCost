@@ -1,78 +1,225 @@
-# PowerCost — metadados para publicação
+# PowerCost — pacote completo de metadados das lojas
 
-## Identidade técnica
+Atualizado em 13 de agosto de 2026. Os textos abaixo foram preparados dentro dos limites atuais: Google Play — nome 30, descrição curta 80 e descrição completa 4.000 caracteres; App Store — nome 30, subtítulo 30, texto promocional 170, descrição 4.000 e palavras-chave 100 bytes.
 
-- Nome: PowerCost
-- Android package: `com.powercost.app`
-- iOS bundle identifier: `com.powercost.app`
-- Categoria sugerida: Utilidades
-- Público-alvo: público geral; não direcionado a crianças
-- Modelo: gratuito com anúncios e recompensas temporárias voluntárias
+## Configuração comum
 
-## URLs públicas utilizáveis
-
-- Política de privacidade: https://github.com/Jhowill/PowerCost/blob/main/docs/PRIVACY_POLICY.md
-- Termos de uso: https://github.com/Jhowill/PowerCost/blob/main/docs/TERMS_OF_USE.md
+- Nome: **PowerCost**
+- Android package / iOS bundle ID: `com.powercost.app`
+- Categoria principal sugerida: **Utilities / Ferramentas**
+- Categoria secundária sugerida na App Store: **Finance**
+- Público: geral, não direcionado a crianças
+- Preço: gratuito
+- Monetização: contém anúncios; anúncios premiados voluntários liberam extras temporários
+- Conta/login: não possui
+- Compras e assinaturas: não possui nesta versão
+- Política: https://github.com/Jhowill/PowerCost/blob/main/docs/PRIVACY_POLICY.md
+- Termos: https://github.com/Jhowill/PowerCost/blob/main/docs/TERMS_OF_USE.md
 - Suporte: https://github.com/Jhowill/PowerCost/issues
-
-As URLs acima são HTTPS e ficam públicas após o push. Para uma apresentação comercial melhor, podem ser posteriormente substituídas pelas rotas `/privacy` e `/terms` hospedadas em domínio próprio.
+- Marketing: https://github.com/Jhowill/PowerCost
 
 ## Português (Brasil)
 
+### Google Play
+
 **Nome:** PowerCost
 
-**Descrição curta:** Calcule o consumo e o custo de energia dos seus aparelhos.
+**Descrição curta:** Calcule consumo, custo mensal e economia de energia dos seus aparelhos.
 
 **Descrição completa:**
 
-Descubra quanto cada aparelho pode pesar na sua conta de luz. Informe potência, tempo de uso, dias por mês e tarifa para obter estimativas mensais e anuais.
+Entenda quanto cada aparelho pode representar na sua conta de luz com cálculos claros e rápidos.
 
-Salve cálculos, compare aparelhos e veja cenários de economia. O PowerCost funciona sem conta e mantém seus cálculos no aparelho. Alguns recursos extras podem ser liberados voluntariamente ao assistir anúncios premiados.
+No PowerCost, você informa a potência do aparelho, o tempo de uso por dia, os dias de utilização no mês e o valor do kWh. O app estima o consumo e apresenta custos por dia, mês e ano.
 
-Os resultados são estimativas informativas e podem variar conforme tarifa, impostos, eficiência do equipamento e hábitos de uso.
+PRINCIPAIS RECURSOS
 
-## English
+• Estimativa de consumo mensal e anual em kWh
+• Cálculo de custo diário, mensal e anual
+• Lista de aparelhos comuns com potências aproximadas
+• Tarifa de energia personalizável
+• Histórico de cálculos salvo no aparelho
+• Comparação entre aparelhos para identificar os maiores custos
+• Cenários de redução de uso e economia projetada
+• Planos e dicas práticas baseados nos dados informados
+• Temas claro e escuro
+• Português, inglês, espanhol e francês
 
-**Name:** PowerCost
+PRIVACIDADE E CONTROLE
 
-**Short description:** Estimate appliance energy use and monthly electricity cost.
+O PowerCost não exige conta. Cálculos, preferências e histórico ficam armazenados localmente e podem ser apagados nos Ajustes. O app contém anúncios. Alguns extras temporários são liberados somente quando você escolhe assistir e conclui um anúncio premiado com internet disponível. As funções básicas de cálculo permanecem acessíveis sem assistir anúncios premiados.
+
+O PowerCost fornece estimativas informativas, não uma medição elétrica em tempo real. Valores reais podem variar conforme tarifa, impostos, bandeiras, eficiência do equipamento, instalação e hábitos de uso.
+
+### App Store
+
+**Nome:** PowerCost
+
+**Subtítulo:** Custo de energia em minutos
+
+**Texto promocional:** Descubra quais aparelhos pesam mais na conta, compare custos e simule economias — sem criar conta e com seus cálculos salvos no aparelho.
+
+**Palavras-chave:** energia,eletricidade,consumo,custo,kWh,conta,tarifa,economia,aparelhos,calculadora
+
+**Descrição:** usar a descrição completa da Google Play acima.
+
+**Novidades — versão 1.0.0:** Primeira versão do PowerCost: cálculos de energia, histórico, comparação, cenários de economia, quatro idiomas e temas claro e escuro.
+
+## English (United States)
+
+### Google Play
+
+**App name:** PowerCost
+
+**Short description:** Estimate appliance energy use, monthly cost, and potential savings.
 
 **Full description:**
 
-See how much each appliance may add to your electricity bill. Enter power, daily usage, days per month and your rate to get monthly and yearly estimates.
+Understand how much each appliance may add to your electricity bill with clear, quick estimates.
 
-Save calculations, compare appliances and explore savings scenarios. PowerCost requires no account and keeps calculations on your device. Optional extras can be unlocked by voluntarily watching rewarded ads.
+Enter appliance wattage, daily usage time, days used per month, and your electricity rate. PowerCost estimates energy consumption and shows daily, monthly, and yearly costs.
 
-Results are informative estimates and may vary with rates, taxes, appliance efficiency and usage habits.
+KEY FEATURES
 
-## Español
+• Monthly and yearly energy estimates in kWh
+• Daily, monthly, and yearly cost calculations
+• Common appliances with practical estimated wattages
+• Custom electricity rate
+• Calculation history stored on your device
+• Appliance comparisons to identify the highest costs
+• Usage-reduction scenarios and projected savings
+• Practical plans and tips based on your inputs
+• Light and dark themes
+• Portuguese, English, Spanish, and French
+
+PRIVACY AND CONTROL
+
+PowerCost requires no account. Calculations, preferences, and history are stored locally and can be deleted in Settings. The app contains ads. Some temporary extras are unlocked only when you choose to watch and complete a rewarded ad while connected to the internet. Core calculation features remain available without rewarded ads.
+
+PowerCost provides informational estimates, not real-time electrical measurements. Actual results may vary based on rates, taxes, equipment efficiency, installation, and usage habits.
+
+### App Store
+
+**Name:** PowerCost
+
+**Subtitle:** Appliance energy cost
+
+**Promotional text:** Find the appliances that cost the most, compare estimates, and explore savings—no account required, with calculations stored on your device.
+
+**Keywords:** energy,electricity,cost,kWh,bill,rate,savings,appliance,power,calculator
+
+**Description:** use the Google Play full description above.
+
+**What’s New — 1.0.0:** Introducing PowerCost with energy estimates, history, appliance comparisons, savings scenarios, four languages, and light and dark themes.
+
+## Español (España)
+
+### Google Play
 
 **Nombre:** PowerCost
 
-**Descripción corta:** Calcula el consumo y costo eléctrico de tus aparatos.
+**Descripción corta:** Calcula consumo, costo eléctrico mensual y ahorro de tus aparatos.
 
 **Descripción completa:**
 
-Descubre cuánto puede sumar cada aparato a tu factura. Introduce potencia, tiempo de uso, días al mes y tarifa para obtener estimaciones mensuales y anuales.
+Descubre cuánto puede representar cada aparato en tu factura de electricidad mediante estimaciones claras y rápidas.
 
-Guarda cálculos, compara aparatos y explora escenarios de ahorro. PowerCost no requiere cuenta y mantiene los cálculos en el dispositivo. Algunos extras pueden desbloquearse voluntariamente con anuncios premiados.
+Indica la potencia, el tiempo de uso diario, los días de uso al mes y tu tarifa eléctrica. PowerCost estima el consumo y muestra costos diarios, mensuales y anuales.
 
-## Français
+FUNCIONES PRINCIPALES
+
+• Estimaciones mensuales y anuales en kWh
+• Cálculos de costo diario, mensual y anual
+• Aparatos comunes con potencias aproximadas
+• Tarifa eléctrica personalizable
+• Historial guardado en el dispositivo
+• Comparación de aparatos y sus costos
+• Escenarios de reducción y ahorro proyectado
+• Planes y consejos basados en los datos indicados
+• Temas claro y oscuro
+• Portugués, inglés, español y francés
+
+PRIVACIDAD Y CONTROL
+
+PowerCost no requiere cuenta. Los cálculos, preferencias y el historial se guardan localmente y pueden borrarse en Ajustes. La aplicación contiene anuncios. Algunos extras temporales solo se desbloquean si decides ver y completar un anuncio premiado con conexión a internet. Las funciones básicas siguen disponibles sin anuncios premiados.
+
+PowerCost ofrece estimaciones informativas, no mediciones eléctricas en tiempo real. Los resultados reales pueden variar según tarifas, impuestos, eficiencia, instalación y hábitos de uso.
+
+### App Store
+
+**Nombre:** PowerCost
+
+**Subtítulo:** Costo eléctrico estimado
+
+**Texto promocional:** Descubre qué aparatos cuestan más, compara estimaciones y explora ahorros, sin crear una cuenta y con los cálculos guardados en tu dispositivo.
+
+**Palabras clave:** energía,electricidad,consumo,costo,kWh,factura,tarifa,ahorro,aparatos,cálculo
+
+**Descripción:** usar la descripción completa de Google Play.
+
+**Novedades — 1.0.0:** Primera versión con cálculos de energía, historial, comparaciones, escenarios de ahorro, cuatro idiomas y temas claro y oscuro.
+
+## Français (France)
+
+### Google Play
+
+**Nom:** PowerCost
+
+**Description courte:** Estimez la consommation, le coût et les économies de vos appareils.
+
+**Description complète:**
+
+Découvrez la part potentielle de chaque appareil dans votre facture d’électricité grâce à des estimations claires et rapides.
+
+Indiquez la puissance, la durée d’utilisation quotidienne, le nombre de jours par mois et votre tarif. PowerCost estime la consommation et affiche les coûts quotidiens, mensuels et annuels.
+
+FONCTIONS PRINCIPALES
+
+• Estimations mensuelles et annuelles en kWh
+• Calcul des coûts quotidiens, mensuels et annuels
+• Appareils courants avec puissances approximatives
+• Tarif électrique personnalisable
+• Historique enregistré sur l’appareil
+• Comparaison des appareils et de leurs coûts
+• Scénarios de réduction et économies projetées
+• Conseils pratiques basés sur vos données
+• Thèmes clair et sombre
+• Portugais, anglais, espagnol et français
+
+CONFIDENTIALITÉ ET CONTRÔLE
+
+PowerCost ne nécessite aucun compte. Les calculs, préférences et l’historique sont conservés localement et peuvent être supprimés dans les Réglages. L’app contient des publicités. Certains avantages temporaires sont débloqués uniquement si vous choisissez de regarder et de terminer une publicité récompensée avec une connexion Internet. Les calculs de base restent accessibles sans publicité récompensée.
+
+PowerCost fournit des estimations informatives, pas des mesures électriques en temps réel. Les résultats réels peuvent varier selon les tarifs, taxes, équipements, installations et habitudes.
+
+### App Store
 
 **Nom :** PowerCost
 
-**Description courte :** Estimez la consommation et le coût de vos appareils.
+**Sous-titre :** Coût électrique estimé
 
-**Description complète :**
+**Texte promotionnel :** Identifiez les appareils les plus coûteux, comparez vos estimations et explorez des économies, sans compte et avec un stockage local.
 
-Découvrez le coût potentiel de chaque appareil. Indiquez la puissance, la durée quotidienne, les jours par mois et le tarif pour obtenir des estimations mensuelles et annuelles.
+**Mots-clés :** énergie,électricité,coût,kWh,facture,tarif,économie,appareil,puissance,calcul
 
-Enregistrez les calculs, comparez les appareils et explorez des scénarios d’économie. Aucun compte n’est requis et les calculs restent sur l’appareil. Des options peuvent être déverrouillées volontairement avec des annonces récompensées.
+**Description :** utiliser la description complète de Google Play.
 
-## Notas para revisão
+**Nouveautés — 1.0.0 :** Première version avec estimations, historique, comparaisons, scénarios d’économie, quatre langues et thèmes clair et sombre.
 
-- O aplicativo não oferece medição elétrica em tempo real.
-- Não há conta, assinatura ou compra dentro do app nesta versão.
-- Anúncios premiados são opcionais e concedem apenas benefícios temporários dentro do aplicativo.
-- O cálculo básico permanece disponível sem assistir anúncios.
-- Informar nas notas da revisão que o formulário UMP pode variar conforme a região configurada no dispositivo.
+## Notas para a equipe de revisão
+
+Use preferencialmente estas notas em inglês:
+
+> PowerCost is a utility that estimates appliance energy consumption and cost from user-provided wattage, usage time, days per month, and electricity rate. It does not measure electricity in real time and has no account or restricted login. Core calculations are always available. Rewarded ads are optional and unlock temporary in-app extras only after the SDK confirms that the reward was earned. These extras require an internet connection. UMP consent and ad availability may vary by region. All calculation data is stored locally and can be deleted under Settings > Delete all local data.
+
+## Declarações recomendadas
+
+- Google Play “Contains ads”: **Yes**
+- App access: **All functionality is available without login**
+- Target audience: adultos e público geral; não selecionar faixas infantis sem nova revisão Families
+- News app: **No**
+- Financial features: **No** — o app estima custo de energia e não presta serviço financeiro
+- Health features: **No**
+- Government app: **No**
+- Content rights: o app usa marca e conteúdo próprios; anúncios são fornecidos pelo Google Mobile Ads
+- Classificação: responder ao questionário com publicidade e sem conteúdo sensível próprio; não presumir a classificação final antes do formulário oficial

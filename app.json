@@ -5,7 +5,7 @@
     "description": "Estimate the energy consumption and monthly cost of household appliances.",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/powercost-icon.png",
+    "icon": "./assets/store/expo-app-icon-1024.png",
     "scheme": "powercost",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -18,8 +18,9 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#07130D",
-        "foregroundImage": "./assets/images/powercost-icon.png"
+        "backgroundColor": "#04170F",
+        "foregroundImage": "./assets/store/android-adaptive-foreground-432.png",
+        "monochromeImage": "./assets/store/android-monochrome-432.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -33,14 +34,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/powercost-icon.png"
+      "favicon": "./assets/store/web-app-icon-192.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/powercost-icon.png",
+          "image": "./assets/store/expo-app-icon-1024.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#F5FAF4",
