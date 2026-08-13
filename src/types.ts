@@ -54,7 +54,7 @@ export type AppSettings = {
 };
 
 export type AdsState = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   adFreeUntil?: string;
   expandedComparisonUntil?: string;
   extraHistorySlotsUntil?: string;

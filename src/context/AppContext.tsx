@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
+import * as Network from 'expo-network';
 import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState, useColorScheme } from 'react-native';
 
 import { translate } from '../i18n/translations';
-import { initializeAds, showAdsPrivacyOptions, showAppOpenAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
+import { initializeAds, RewardedAdResult, showAdsPrivacyOptions, showAppOpenAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
 import { palettes } from '../theme';
 import {
   AdsState,
@@ -49,7 +50,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 };
 
 const DEFAULT_ADS: AdsState = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   tipsUnlockedSimulationIds: [],
   completedCalculationsSinceLastInterstitial: 0,
 };
@@ -88,7 +89,7 @@ type AppContextValue = {
   setLocale: (locale: SupportedLocale) => void;
   setTheme: (theme: AppTheme) => void;
   setDefaultTariff: (value: number) => void;
-  unlockFeature: (feature: RewardedFeature) => Promise<boolean>;
+  unlockFeature: (feature: RewardedFeature) => Promise<RewardedAdResult>;
   openAdsPrivacyOptions: () => Promise<boolean>;
   maybeShowInterstitial: () => Promise<void>;
   canShowBanner: boolean;
@@ -96,6 +97,7 @@ type AppContextValue = {
   expandedComparisonActive: boolean;
   extraHistoryActive: boolean;
   whatIfActive: boolean;
+  internetAvailable: boolean;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -128,10 +130,11 @@ const normalizeSettings = (raw: string | null): AppSettings => {
 
 const normalizeAds = (raw: string | null): AdsState => {
   const value = safeParse<Partial<AdsState>>(raw, {});
+  if (value.schemaVersion !== 2) return DEFAULT_ADS;
   return {
     ...DEFAULT_ADS,
     ...value,
-    schemaVersion: 1,
+    schemaVersion: 2,
     tipsUnlockedSimulationIds: Array.isArray(value.tipsUnlockedSimulationIds)
       ? value.tipsUnlockedSimulationIds.filter((id): id is string => typeof id === 'string')
       : [],
@@ -162,6 +165,8 @@ const normalizeHistory = (raw: string | null): SavedSimulation[] => {
 
 export function AppProvider({ children }: PropsWithChildren) {
   const systemTheme = useColorScheme();
+  const networkState = Network.useNetworkState();
+  const internetAvailable = networkState.isConnected === true && networkState.isInternetReachable === true;
   const [hydrated, setHydrated] = useState(false);
   const [adsInitialized, setAdsInitialized] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -171,7 +176,6 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [currentSimulation, setCurrentSimulation] = useState<SavedSimulation | null>(null);
 
   useEffect(() => {
-    void initializeAds().then(setAdsInitialized);
     void Promise.all([
       AsyncStorage.getItem(STORAGE.settings),
       AsyncStorage.getItem(STORAGE.history),
@@ -193,15 +197,29 @@ export function AppProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    if (!internetAvailable) {
+      setAdsInitialized(false);
+      return;
+    }
+    void initializeAds().then((ready) => {
+      if (active) setAdsInitialized(ready);
+    }).catch(() => {
+      if (active) setAdsInitialized(false);
+    });
+    return () => { active = false; };
+  }, [internetAvailable]);
+
+  useEffect(() => {
     if (!hydrated || !adsInitialized) return;
 
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active' && settings.hasSeenFirstResult && !isActiveUntil(ads.adFreeUntil)) {
+      if (nextState === 'active' && settings.hasSeenFirstResult && internetAvailable && !isActiveUntil(ads.adFreeUntil)) {
         void showAppOpenAd();
       }
     });
     return () => subscription.remove();
-  }, [ads.adFreeUntil, adsInitialized, hydrated, settings.hasSeenFirstResult]);
+  }, [ads.adFreeUntil, adsInitialized, hydrated, internetAvailable, settings.hasSeenFirstResult]);
 
   useEffect(() => {
     if (hydrated) void AsyncStorage.setItem(STORAGE.settings, JSON.stringify(settings)).catch(() => undefined);
@@ -243,7 +261,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setDraft({ ...simulation.input });
   };
 
-  const extraHistoryActive = isActiveUntil(ads.extraHistorySlotsUntil);
+  const extraHistoryActive = internetAvailable && isActiveUntil(ads.extraHistorySlotsUntil);
   const saveCurrent = (): SaveResult => {
     if (!currentSimulation) return 'none';
     if (history.some((item) => item.id === currentSimulation.id)) return 'saved';
@@ -274,9 +292,10 @@ export function AppProvider({ children }: PropsWithChildren) {
   };
 
   const unlockFeature = async (feature: RewardedFeature) => {
-    if (feature === 'energy_tips' && !currentSimulation) return false;
-    const success = await showRewardedAd();
-    if (!success) return false;
+    if (!internetAvailable) return 'offline';
+    if (feature === 'energy_tips' && !currentSimulation) return 'unavailable';
+    const result = await showRewardedAd();
+    if (result !== 'earned') return result;
     const fromNow = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
     setAds((value) => {
       if (feature === 'ad_free') return { ...value, adFreeUntil: fromNow(30) };
@@ -288,10 +307,10 @@ export function AppProvider({ children }: PropsWithChildren) {
       }
       return value;
     });
-    return true;
+    return 'earned';
   };
 
-  const adFreeActive = isActiveUntil(ads.adFreeUntil);
+  const adFreeActive = internetAvailable && isActiveUntil(ads.adFreeUntil);
   const openAdsPrivacyOptions = async () => {
     const result = await showAdsPrivacyOptions();
     setAdsInitialized(result.adsReady);
@@ -334,14 +353,15 @@ export function AppProvider({ children }: PropsWithChildren) {
     unlockFeature,
     openAdsPrivacyOptions,
     maybeShowInterstitial,
-    canShowBanner: adsInitialized && settings.hasSeenFirstResult && !adFreeActive,
+    canShowBanner: internetAvailable && adsInitialized && settings.hasSeenFirstResult && !adFreeActive,
     adFreeActive,
-    expandedComparisonActive: isActiveUntil(ads.expandedComparisonUntil),
+    expandedComparisonActive: internetAvailable && isActiveUntil(ads.expandedComparisonUntil),
     extraHistoryActive,
-    whatIfActive: isActiveUntil(ads.whatIfUnlockedUntil),
+    whatIfActive: internetAvailable && isActiveUntil(ads.whatIfUnlockedUntil),
+    internetAvailable,
   // Functions are intentionally regenerated with the current localized state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [hydrated, adsInitialized, settings, ads, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive]);
+  }), [hydrated, adsInitialized, settings, ads, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive, internetAvailable]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

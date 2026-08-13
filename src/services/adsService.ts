@@ -1,4 +1,5 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
+import * as Network from 'expo-network';
 import { Platform } from 'react-native';
 
 import { getAdUnitId } from '../config/ads';
@@ -14,10 +15,21 @@ type FullscreenAd = {
 export const nativeAdsAvailable =
   Platform.OS !== 'web' && Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
 
-const pause = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 let fullscreenAdShowing = false;
 let lastAppOpenShownAt = 0;
 let adsReady = false;
+let initializationPromise: Promise<boolean> | null = null;
+
+export type RewardedAdResult = 'earned' | 'offline' | 'unavailable';
+
+const hasInternetConnection = async () => {
+  try {
+    const state = await Network.getNetworkStateAsync();
+    return state.isConnected === true && state.isInternetReachable === true;
+  } catch {
+    return false;
+  }
+};
 
 type MobileAdsModule = {
   default: () => {
@@ -47,24 +59,33 @@ const startMobileAds = async (ads: MobileAdsModule) => {
 
 export const initializeAds = async (): Promise<boolean> => {
   if (!nativeAdsAvailable) return true;
-  try {
-    const ads = require('react-native-google-mobile-ads') as unknown as MobileAdsModule;
-    const consent = await ads.AdsConsent.gatherConsent();
-    if (!consent.canRequestAds) return false;
-    await startMobileAds(ads);
-    return true;
-  } catch {
-    // Falhas de consentimento ou anúncios nunca bloqueiam o app.
-    return false;
+  if (adsReady) return true;
+  if (!(await hasInternetConnection())) return false;
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      try {
+        const ads = require('react-native-google-mobile-ads') as unknown as MobileAdsModule;
+        const consent = await ads.AdsConsent.gatherConsent();
+        if (!consent.canRequestAds) return false;
+        await startMobileAds(ads);
+        return true;
+      } catch {
+        // Falhas de consentimento ou anúncios nunca bloqueiam o app.
+        return false;
+      }
+    })().finally(() => {
+      initializationPromise = null;
+    });
   }
+  return initializationPromise;
 };
 
-export const showRewardedAd = async (): Promise<boolean> => {
-  if (!nativeAdsAvailable) {
-    await pause(700);
-    return true;
-  }
-  if (!adsReady || fullscreenAdShowing) return false;
+export const showRewardedAd = async (): Promise<RewardedAdResult> => {
+  if (!nativeAdsAvailable) return 'unavailable';
+  if (!(await hasInternetConnection())) return 'offline';
+  if (fullscreenAdShowing) return 'unavailable';
+  if (!adsReady && !(await initializeAds())) return 'unavailable';
+  fullscreenAdShowing = true;
 
   try {
     const ads = require('react-native-google-mobile-ads') as unknown as {
@@ -74,12 +95,12 @@ export const showRewardedAd = async (): Promise<boolean> => {
       TestIds: { REWARDED: string };
     };
     const ad = ads.RewardedAd.createForAdRequest(getAdUnitId('rewarded', ads.TestIds.REWARDED));
-    return await new Promise<boolean>((resolve) => {
+    return await new Promise<RewardedAdResult>((resolve) => {
       let earned = false;
       let settled = false;
       let loadTimeout: ReturnType<typeof setTimeout>;
       const cleanups: (() => void)[] = [];
-      const finish = (value: boolean) => {
+      const finish = (value: RewardedAdResult) => {
         if (settled) return;
         settled = true;
         fullscreenAdShowing = false;
@@ -89,23 +110,33 @@ export const showRewardedAd = async (): Promise<boolean> => {
       };
       cleanups.push(ad.addAdEventListener(ads.RewardedAdEventType.LOADED, () => {
         clearTimeout(loadTimeout);
-        fullscreenAdShowing = true;
-        void ad.show().catch(() => finish(false));
+        loadTimeout = setTimeout(() => finish('unavailable'), 120_000);
+        void ad.show().catch(() => finish('unavailable'));
       }));
       cleanups.push(ad.addAdEventListener(ads.RewardedAdEventType.EARNED_REWARD, () => { earned = true; }));
-      cleanups.push(ad.addAdEventListener(ads.AdEventType.CLOSED, () => finish(earned)));
-      cleanups.push(ad.addAdEventListener(ads.AdEventType.ERROR, () => finish(false)));
-      loadTimeout = setTimeout(() => finish(false), 15_000);
+      cleanups.push(ad.addAdEventListener(ads.AdEventType.CLOSED, () => {
+        if (!earned) {
+          finish('unavailable');
+          return;
+        }
+        void hasInternetConnection()
+          .then((online) => finish(online ? 'earned' : 'offline'))
+          .catch(() => finish('offline'));
+      }));
+      cleanups.push(ad.addAdEventListener(ads.AdEventType.ERROR, () => finish('unavailable')));
+      loadTimeout = setTimeout(() => finish('unavailable'), 15_000);
       ad.load();
     });
   } catch {
     fullscreenAdShowing = false;
-    return false;
+    return 'unavailable';
   }
 };
 
 export const showInterstitialAd = async (): Promise<boolean> => {
   if (!nativeAdsAvailable || !adsReady || fullscreenAdShowing) return false;
+  if (!(await hasInternetConnection())) return false;
+  fullscreenAdShowing = true;
   try {
     const ads = require('react-native-google-mobile-ads') as unknown as {
       InterstitialAd: { createForAdRequest: (id: string) => FullscreenAd };
@@ -127,7 +158,7 @@ export const showInterstitialAd = async (): Promise<boolean> => {
       };
       cleanups.push(ad.addAdEventListener(ads.AdEventType.LOADED, () => {
         clearTimeout(loadTimeout);
-        fullscreenAdShowing = true;
+        loadTimeout = setTimeout(() => finish(false), 120_000);
         void ad.show().catch(() => finish(false));
       }));
       cleanups.push(ad.addAdEventListener(ads.AdEventType.CLOSED, () => finish(true)));
@@ -143,6 +174,8 @@ export const showInterstitialAd = async (): Promise<boolean> => {
 
 export const showAppOpenAd = async (): Promise<boolean> => {
   if (!nativeAdsAvailable || !adsReady || fullscreenAdShowing || Date.now() - lastAppOpenShownAt < 10 * 60_000) return false;
+  if (!(await hasInternetConnection())) return false;
+  fullscreenAdShowing = true;
   try {
     const ads = require('react-native-google-mobile-ads') as unknown as {
       AppOpenAd: { createForAdRequest: (id: string) => FullscreenAd };
@@ -164,7 +197,7 @@ export const showAppOpenAd = async (): Promise<boolean> => {
       };
       cleanups.push(ad.addAdEventListener(ads.AdEventType.LOADED, () => {
         clearTimeout(loadTimeout);
-        fullscreenAdShowing = true;
+        loadTimeout = setTimeout(() => finish(false), 120_000);
         lastAppOpenShownAt = Date.now();
         void ad.show().catch(() => finish(false));
       }));

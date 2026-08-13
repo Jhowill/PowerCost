@@ -12,7 +12,7 @@ import { createSavingsPlan, getRecommendedReduction, getSavingActionKey } from '
 
 export default function ResultScreen() {
   const {
-    colors, t, currentSimulation, settings, ads, whatIfActive, saveCurrent, isCurrentSaved,
+    colors, t, currentSimulation, settings, ads, whatIfActive, internetAvailable, saveCurrent, isCurrentSaved,
     resetCalculation, maybeShowInterstitial,
   } = useApp();
   const [reduction, setReduction] = useState(25);
@@ -30,7 +30,7 @@ export default function ResultScreen() {
   const applianceName = input.applianceNameKey ? t(input.applianceNameKey) : input.applianceName;
   const impactKey = `result.${result.impactLevel}`;
   const impactColor = result.impactLevel === 'low' ? colors.success : result.impactLevel === 'medium' ? colors.warning : colors.danger;
-  const tipsActive = ads.tipsUnlockedSimulationIds.includes(currentSimulation.id);
+  const tipsActive = internetAvailable && ads.tipsUnlockedSimulationIds.includes(currentSimulation.id);
   const recommendedReduction = getRecommendedReduction(input.applianceId);
   const recommendedPlan = createSavingsPlan(input, result, recommendedReduction);
   const scenarioPlan = createSavingsPlan(input, result, reduction);

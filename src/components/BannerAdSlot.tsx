@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../context/AppContext';
 import { getAdUnitId } from '../config/ads';
 import { nativeAdsAvailable } from '../services/adsService';
+import { AdErrorBoundary } from './AdErrorBoundary';
 
 declare const require: (moduleName: string) => Record<string, unknown>;
 
@@ -19,9 +20,11 @@ export function BannerAdSlot() {
         TestIds: { BANNER: string };
       };
       return (
-        <View style={styles.nativeWrap}>
-          <ads.BannerAd unitId={getAdUnitId('banner', ads.TestIds.BANNER)} size={ads.BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
-        </View>
+        <AdErrorBoundary>
+          <View style={styles.nativeWrap}>
+            <ads.BannerAd unitId={getAdUnitId('banner', ads.TestIds.BANNER)} size={ads.BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
+          </View>
+        </AdErrorBoundary>
       );
     } catch {
       return null;

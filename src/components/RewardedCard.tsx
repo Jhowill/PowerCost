@@ -16,14 +16,19 @@ export function RewardedCard({ title, description, duration, feature, icon = 'gi
   active?: boolean;
   disabled?: boolean;
 }) {
-  const { colors, t, unlockFeature } = useApp();
+  const { colors, t, unlockFeature, internetAvailable } = useApp();
   const [loading, setLoading] = useState(false);
-  const isActive = active || Boolean(activeUntil && new Date(activeUntil).getTime() > Date.now());
+  const isActive = internetAvailable && (active || Boolean(activeUntil && new Date(activeUntil).getTime() > Date.now()));
   const onWatch = async () => {
     setLoading(true);
-    const success = await unlockFeature(feature);
-    setLoading(false);
-    Alert.alert(success ? t('ads.unlocked') : t('ads.failed'));
+    try {
+      const result = await unlockFeature(feature);
+      Alert.alert(result === 'earned' ? t('ads.unlocked') : result === 'offline' ? t('ads.offline') : t('ads.failed'));
+    } catch {
+      Alert.alert(t('ads.failed'));
+    } finally {
+      setLoading(false);
+    }
   };
   const time = activeUntil ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(activeUntil)) : '';
   return (

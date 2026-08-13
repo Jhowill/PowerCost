@@ -4,6 +4,7 @@ import { Image, StyleSheet, Text, View, ViewProps } from 'react-native';
 import { getAdUnitId } from '../config/ads';
 import { useApp } from '../context/AppContext';
 import { nativeAdsAvailable } from '../services/adsService';
+import { AdErrorBoundary } from './AdErrorBoundary';
 
 declare const require: (moduleName: string) => Record<string, unknown>;
 
@@ -57,35 +58,37 @@ export function NativeAdSlot() {
   try {
     const ads = require('react-native-google-mobile-ads') as unknown as NativeAdsModule;
     return (
-      <ads.NativeAdView nativeAd={nativeAd} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <View style={styles.sponsorRow}>
-          <Text style={[styles.sponsored, { color: colors.textMuted }]}>{t('ads.sponsored')}</Text>
-          {nativeAd.advertiser ? (
-            <ads.NativeAsset assetType={ads.NativeAssetType.ADVERTISER}>
-              <Text numberOfLines={1} style={[styles.advertiser, { color: colors.textMuted }]}>{nativeAd.advertiser}</Text>
-            </ads.NativeAsset>
-          ) : null}
-        </View>
-        <View style={styles.heading}>
-          {nativeAd.icon ? (
-            <ads.NativeAsset assetType={ads.NativeAssetType.ICON}>
-              <Image source={{ uri: nativeAd.icon.url }} style={styles.icon} />
-            </ads.NativeAsset>
-          ) : null}
-          <ads.NativeAsset assetType={ads.NativeAssetType.HEADLINE}>
-            <Text numberOfLines={2} style={[styles.headline, { color: colors.text }]}>{nativeAd.headline}</Text>
-          </ads.NativeAsset>
-        </View>
-        <ads.NativeMediaView resizeMode="cover" style={styles.media} />
-        <ads.NativeAsset assetType={ads.NativeAssetType.BODY}>
-          <Text numberOfLines={3} style={[styles.body, { color: colors.textMuted }]}>{nativeAd.body}</Text>
-        </ads.NativeAsset>
-        <ads.NativeAsset assetType={ads.NativeAssetType.CALL_TO_ACTION}>
-          <View style={[styles.cta, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.ctaText, { color: colors.textOnPrimary }]}>{nativeAd.callToAction}</Text>
+      <AdErrorBoundary>
+        <ads.NativeAdView nativeAd={nativeAd} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.sponsorRow}>
+            <Text style={[styles.sponsored, { color: colors.textMuted }]}>{t('ads.sponsored')}</Text>
+            {nativeAd.advertiser ? (
+              <ads.NativeAsset assetType={ads.NativeAssetType.ADVERTISER}>
+                <Text numberOfLines={1} style={[styles.advertiser, { color: colors.textMuted }]}>{nativeAd.advertiser}</Text>
+              </ads.NativeAsset>
+            ) : null}
           </View>
-        </ads.NativeAsset>
-      </ads.NativeAdView>
+          <View style={styles.heading}>
+            {nativeAd.icon ? (
+              <ads.NativeAsset assetType={ads.NativeAssetType.ICON}>
+                <Image source={{ uri: nativeAd.icon.url }} style={styles.icon} />
+              </ads.NativeAsset>
+            ) : null}
+            <ads.NativeAsset assetType={ads.NativeAssetType.HEADLINE}>
+              <Text numberOfLines={2} style={[styles.headline, { color: colors.text }]}>{nativeAd.headline}</Text>
+            </ads.NativeAsset>
+          </View>
+          <ads.NativeMediaView resizeMode="cover" style={styles.media} />
+          <ads.NativeAsset assetType={ads.NativeAssetType.BODY}>
+            <Text numberOfLines={3} style={[styles.body, { color: colors.textMuted }]}>{nativeAd.body}</Text>
+          </ads.NativeAsset>
+          <ads.NativeAsset assetType={ads.NativeAssetType.CALL_TO_ACTION}>
+            <View style={[styles.cta, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.ctaText, { color: colors.textOnPrimary }]}>{nativeAd.callToAction}</Text>
+            </View>
+          </ads.NativeAsset>
+        </ads.NativeAdView>
+      </AdErrorBoundary>
     );
   } catch {
     return null;
