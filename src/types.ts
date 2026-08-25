@@ -50,7 +50,6 @@ export type AppSettings = {
   theme: AppTheme;
   currency: CurrencyCode;
   defaultTariffPerKwh?: number;
-  hasSeenFirstResult: boolean;
 };
 
 export type AdsState = {

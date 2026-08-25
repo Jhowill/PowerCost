@@ -58,7 +58,7 @@ export default function SettingsScreen() {
 
       <SectionLabel>{t('settings.ads')}</SectionLabel>
       <RewardedCard title={t('settings.removeAds')} duration={t('unlock.adFreeTime')} feature="ad_free" activeUntil={ads.adFreeUntil} />
-      <Button label={t('unlock.title')} onPress={() => router.push('/unlock')} variant="outline" icon="gift-outline" />
+      <Button label={t('unlock.title')} onPress={() => router.push('/extras')} variant="outline" icon="gift-outline" />
       <Button
         label={t('settings.adPrivacy')}
         onPress={() => void openAdsPrivacyOptions().then((success) => {

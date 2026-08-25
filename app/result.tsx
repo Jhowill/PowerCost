@@ -43,7 +43,7 @@ export default function ResultScreen() {
     } else if (status === 'limit') {
       Alert.alert(t('history.limit'), t('history.unlock'), [
         { text: t('common.cancel'), style: 'cancel' },
-        { text: t('ads.watch'), onPress: () => router.push('/unlock') },
+        { text: t('ads.watch'), onPress: () => router.push('/extras') },
       ]);
     }
   };

@@ -10,6 +10,7 @@ export default function TabLayout() {
     index: ['home', 'home-outline'],
     calculate: ['add', 'add-outline'],
     history: ['time', 'time-outline'],
+    extras: ['gift', 'gift-outline'],
     settings: ['settings', 'settings-outline'],
   } as const;
   return (
@@ -27,6 +28,7 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{ title: t('nav.home') }} />
       <Tabs.Screen name="calculate" options={{ title: t('nav.calculate') }} />
       <Tabs.Screen name="history" options={{ title: t('nav.history') }} />
+      <Tabs.Screen name="extras" options={{ title: t('nav.extras') }} />
       <Tabs.Screen name="settings" options={{ title: t('nav.settings') }} />
     </Tabs>
   );

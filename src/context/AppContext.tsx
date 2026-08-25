@@ -46,7 +46,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: 'system',
   currency: CURRENCY_BY_LOCALE[initialLocale],
   defaultTariffPerKwh: 0.9,
-  hasSeenFirstResult: false,
 };
 
 const DEFAULT_ADS: AdsState = {
@@ -124,7 +123,6 @@ const normalizeSettings = (raw: string | null): AppSettings => {
     theme,
     currency,
     defaultTariffPerKwh: typeof value.defaultTariffPerKwh === 'number' && value.defaultTariffPerKwh > 0 ? value.defaultTariffPerKwh : DEFAULT_SETTINGS.defaultTariffPerKwh,
-    hasSeenFirstResult: Boolean(value.hasSeenFirstResult),
   };
 };
 
@@ -214,12 +212,12 @@ export function AppProvider({ children }: PropsWithChildren) {
     if (!hydrated || !adsInitialized) return;
 
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active' && settings.hasSeenFirstResult && internetAvailable && !isActiveUntil(ads.adFreeUntil)) {
+      if (nextState === 'active' && internetAvailable && !isActiveUntil(ads.adFreeUntil)) {
         void showAppOpenAd();
       }
     });
     return () => subscription.remove();
-  }, [ads.adFreeUntil, adsInitialized, hydrated, internetAvailable, settings.hasSeenFirstResult]);
+  }, [ads.adFreeUntil, adsInitialized, hydrated, internetAvailable]);
 
   useEffect(() => {
     if (hydrated) void AsyncStorage.setItem(STORAGE.settings, JSON.stringify(settings)).catch(() => undefined);
@@ -248,7 +246,6 @@ export function AppProvider({ children }: PropsWithChildren) {
       createdAt: now(),
     };
     setCurrentSimulation(simulation);
-    setSettings((value) => ({ ...value, hasSeenFirstResult: true }));
     setAds((value) => ({
       ...value,
       completedCalculationsSinceLastInterstitial: value.completedCalculationsSinceLastInterstitial + 1,
@@ -317,7 +314,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     return result.opened;
   };
   const maybeShowInterstitial = async () => {
-    if (!settings.hasSeenFirstResult || adFreeActive || ads.completedCalculationsSinceLastInterstitial < 1) return;
+    if (adFreeActive || ads.completedCalculationsSinceLastInterstitial < 1) return;
     if (ads.lastInterstitialShownAt) {
       const minutes = (Date.now() - new Date(ads.lastInterstitialShownAt).getTime()) / 60_000;
       if (minutes < 2) return;
@@ -353,7 +350,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     unlockFeature,
     openAdsPrivacyOptions,
     maybeShowInterstitial,
-    canShowBanner: internetAvailable && adsInitialized && settings.hasSeenFirstResult && !adFreeActive,
+    canShowBanner: internetAvailable && adsInitialized && !adFreeActive,
     adFreeActive,
     expandedComparisonActive: internetAvailable && isActiveUntil(ads.expandedComparisonUntil),
     extraHistoryActive,

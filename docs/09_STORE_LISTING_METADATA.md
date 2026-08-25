@@ -1,6 +1,6 @@
 # PowerCost — pacote completo de metadados das lojas
 
-Atualizado em 13 de agosto de 2026. Os textos abaixo foram preparados dentro dos limites atuais: Google Play — nome 30, descrição curta 80 e descrição completa 4.000 caracteres; App Store — nome 30, subtítulo 30, texto promocional 170, descrição 4.000 e palavras-chave 100 bytes.
+Atualizado em 24 de agosto de 2026. Os textos abaixo foram preparados dentro dos limites atuais: Google Play — nome 30, descrição curta 80 e descrição completa 4.000 caracteres; App Store — nome 30, subtítulo 30, texto promocional 170, descrição 4.000 e palavras-chave 100 bytes.
 
 ## Configuração comum
 
@@ -210,7 +210,7 @@ PowerCost fournit des estimations informatives, pas des mesures électriques en 
 
 Use preferencialmente estas notas em inglês:
 
-> PowerCost is a utility that estimates appliance energy consumption and cost from user-provided wattage, usage time, days per month, and electricity rate. It does not measure electricity in real time and has no account or restricted login. Core calculations are always available. Rewarded ads are optional and unlock temporary in-app extras only after the SDK confirms that the reward was earned. These extras require an internet connection. UMP consent and ad availability may vary by region. All calculation data is stored locally and can be deleted under Settings > Delete all local data.
+> PowerCost has no account, reviewer-specific behavior, secret gestures, remote feature flags, or server-controlled functionality. Every rewarded feature is permanently visible under the Extras tab. The five optional rewards are: remove ads for 30 minutes; compare up to 10 appliances for 24 hours; add 5 history slots for 24 hours; unlock a personalized plan for the current estimate; and unlock “What if?” scenarios for 30 minutes. A reward is granted only after Google Mobile Ads confirms EARNED_REWARD. Internet and ad inventory are required. Core calculations never require an ad. To review result-based extras: Home > Calculate Now > select an appliance > enter usage and rate > Calculate. Banner and native ads are eligible after consent; interstitial ads may appear after completing a calculation; app-open ads may appear when returning to the foreground, subject to frequency limits. UMP/ATT choices may vary by region. All calculation data is local and can be deleted under Settings > Delete all local data.
 
 ## Declarações recomendadas
 
