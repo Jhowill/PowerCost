@@ -1,6 +1,6 @@
 # Auditoria após correções — 13/09/2026
 
-Base revisada: ce341ba. Este relatório acompanha o commit que o contém.
+Base revisada: b1479b6. Este relatório acompanha o commit que o contém.
 Escopo: implementação do plano pendente; testes de código e SDK simulado. Não constitui aprovação das lojas nem certificação de ausência de falhas.
 
 ## Alterações verificadas
