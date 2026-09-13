@@ -195,6 +195,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const networkState = Network.useNetworkState();
   const internetAvailable = networkState.isConnected === true && networkState.isInternetReachable === true;
   const [hydrated, setHydrated] = useState(false);
+  const [clock, setClock] = useState(0);
   const [adsInitialized, setAdsInitialized] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [ads, setAds] = useState<AdsState>(DEFAULT_ADS);
