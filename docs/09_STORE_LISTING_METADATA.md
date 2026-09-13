@@ -41,6 +41,7 @@ PRINCIPAIS RECURSOS
 • Histórico de cálculos salvo no aparelho
 • Comparação entre aparelhos para identificar os maiores custos
 • Cenários de redução de uso e economia projetada
+• Planejamento da casa por cômodo, meta mensal e comparação com faturas
 • Planos e dicas práticas baseados nos dados informados
 • Temas claro e escuro
 • Português, inglês, espanhol e francês
@@ -88,6 +89,7 @@ KEY FEATURES
 • Calculation history stored on your device
 • Appliance comparisons to identify the highest costs
 • Usage-reduction scenarios and projected savings
+• Household planning by room, monthly goals, and bill comparison
 • Practical plans and tips based on your inputs
 • Light and dark themes
 • Portuguese, English, Spanish, and French
@@ -135,6 +137,7 @@ FUNCIONES PRINCIPALES
 • Historial guardado en el dispositivo
 • Comparación de aparatos y sus costos
 • Escenarios de reducción y ahorro proyectado
+• Planificación del hogar por habitación, metas mensuales y comparación de facturas
 • Planes y consejos basados en los datos indicados
 • Temas claro y oscuro
 • Portugués, inglés, español y francés
@@ -182,6 +185,7 @@ FONCTIONS PRINCIPALES
 • Historique enregistré sur l’appareil
 • Comparaison des appareils et de leurs coûts
 • Scénarios de réduction et économies projetées
+• Planification du foyer par pièce, objectifs mensuels et comparaison de factures
 • Conseils pratiques basés sur vos données
 • Thèmes clair et sombre
 • Portugais, anglais, espagnol et français
@@ -210,7 +214,7 @@ PowerCost fournit des estimations informatives, pas des mesures électriques en 
 
 Use preferencialmente estas notas em inglês:
 
-> PowerCost has no account, reviewer-specific behavior, secret gestures, remote feature flags, or server-controlled functionality. Every rewarded feature is permanently visible under the Extras tab. The five optional rewards are: remove ads for 30 minutes; compare up to 10 appliances for 24 hours; add 5 history slots for 24 hours; unlock a personalized plan for the current estimate; and unlock “What if?” scenarios for 30 minutes. A reward is granted only after Google Mobile Ads confirms EARNED_REWARD. Internet and ad inventory are required. Core calculations never require an ad. To review result-based extras: Home > Calculate Now > select an appliance > enter usage and rate > Calculate. Banner and native ads are eligible after consent; interstitial ads may appear after completing a calculation; app-open ads may appear when returning to the foreground, subject to frequency limits. UMP/ATT choices may vary by region. All calculation data is local and can be deleted under Settings > Delete all local data.
+> PowerCost has no account, reviewer-specific behavior, secret gestures, remote feature flags, or server-controlled functionality. Every rewarded feature is permanently visible under the Extras tab. The five optional rewards are: remove ads for 30 minutes; compare up to 10 appliances for 24 hours; add 5 history slots for 24 hours; unlock a personalized plan for the current estimate; and unlock “What if?” scenarios for 30 minutes. A reward is granted only after Google Mobile Ads confirms EARNED_REWARD. Internet and ad inventory are required. Core calculations never require an ad. To review result-based extras: Home > Calculate Now > select an appliance > enter usage and rate > Calculate. Banner and native ads are eligible after consent; interstitial ads may appear after completing a calculation; app-open ads may appear when returning to the foreground, subject to frequency limits. UMP/ATT choices may vary by region. All calculation and household-plan data is local and can be deleted under Settings > Delete all local data.
 
 ## Declarações recomendadas
 
