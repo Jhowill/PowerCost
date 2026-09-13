@@ -18,6 +18,8 @@ export default function CalculateScreen() {
   const [tariffText, setTariffText] = useState(String(draft.tariffPerKwh || settings.defaultTariffPerKwh || 0.9).replace('.', ','));
   const [hoursCustom, setHoursCustom] = useState('');
   const [daysCustom, setDaysCustom] = useState('');
+  const [quantityText, setQuantityText] = useState(String(draft.quantity ?? 1));
+  const [roomText, setRoomText] = useState(draft.room ?? '');
   const [saveTariff, setSaveTariff] = useState(false);
   const [error, setError] = useState('');
 
@@ -61,7 +63,9 @@ export default function CalculateScreen() {
     if (!Number.isFinite(hours) || hours <= 0 || hours > 24) return setError(t('error.hours'));
     if (!Number.isInteger(days) || days < 1 || days > 31) return setError(t('error.days'));
     if (!Number.isFinite(tariff) || tariff <= 0) return setError(t('error.tariff'));
-    const input = { ...draft, powerWatts: parseDecimal(powerText), hoursPerDay: hours, daysPerMonth: days, tariffPerKwh: tariff };
+    const quantity = parseDecimal(quantityText);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) return setError(t('error.quantity'));
+    const input = { ...draft, powerWatts: parseDecimal(powerText), hoursPerDay: hours, daysPerMonth: days, tariffPerKwh: tariff, quantity, room: roomText.trim() || undefined };
     setDraft(input);
     if (saveTariff) setDefaultTariff(tariff);
     completeCalculation(input);
@@ -141,6 +145,8 @@ export default function CalculateScreen() {
           <Choice title={t('calculate.workDays')} subtitle={t('calculate.daysCount', { count: 22 })} selected={!daysCustom && draft.daysPerMonth === 22} onPress={() => { setDaysCustom(''); setDraft((value) => ({ ...value, daysPerMonth: 22 })); }} compact />
           <Field label={t('calculate.custom')} value={daysCustom} onChangeText={setDaysCustom} keyboardType="number-pad" unit={t('calculate.daysCount', { count: '' }).trim()} />
 
+          <Field label={t('calculate.quantityLabel')} value={quantityText} onChangeText={setQuantityText} keyboardType="number-pad" unit="×" />
+          <Field label={t('calculate.roomLabel')} value={roomText} onChangeText={setRoomText} placeholder={t('calculate.roomPlaceholder')} />
           <Field label={t('calculate.tariffQuestion')} value={tariffText} onChangeText={setTariffText} keyboardType="decimal-pad" unit={`${formatCurrencySymbol(settings.currency)}/kWh`} />
           <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: saveTariff }} onPress={() => setSaveTariff((value) => !value)} style={styles.checkboxRow}>
             <Ionicons name={saveTariff ? 'checkbox' : 'square-outline'} size={27} color={colors.primary} />
