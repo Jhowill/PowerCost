@@ -111,7 +111,7 @@ export const showRewardedAd = async (): Promise<RewardedAdResult> => {
       cleanups.push(ad.addAdEventListener(ads.RewardedAdEventType.LOADED, () => {
         clearTimeout(loadTimeout);
         loadTimeout = setTimeout(() => finish(earned ? 'earned' : 'unavailable'), 120_000);
-        void ad.show().catch(() => finish('unavailable'));
+        void ad.show().catch(() => finish(earned ? 'earned' : 'unavailable'));
       }));
       cleanups.push(ad.addAdEventListener(ads.RewardedAdEventType.EARNED_REWARD, () => { earned = true; }));
       cleanups.push(ad.addAdEventListener(ads.AdEventType.CLOSED, () => {
@@ -121,7 +121,7 @@ export const showRewardedAd = async (): Promise<RewardedAdResult> => {
         }
         finish('earned');
       }));
-      cleanups.push(ad.addAdEventListener(ads.AdEventType.ERROR, () => finish('unavailable')));
+      cleanups.push(ad.addAdEventListener(ads.AdEventType.ERROR, () => finish(earned ? 'earned' : 'unavailable')));
       loadTimeout = setTimeout(() => finish(earned ? 'earned' : 'unavailable'), 15_000);
       ad.load();
     });
