@@ -409,7 +409,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     internetAvailable,
   // Functions are intentionally regenerated with the current localized state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [hydrated, adsInitialized, settings, ads, plan, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive, internetAvailable]);
+  }), [hydrated, adsInitialized, clock, settings, ads, plan, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive, internetAvailable]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
