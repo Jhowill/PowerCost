@@ -119,9 +119,7 @@ export const showRewardedAd = async (): Promise<RewardedAdResult> => {
           finish('unavailable');
           return;
         }
-        void hasInternetConnection()
-          .then((online) => finish(online ? 'earned' : 'offline'))
-          .catch(() => finish('offline'));
+        finish('earned');
       }));
       cleanups.push(ad.addAdEventListener(ads.AdEventType.ERROR, () => finish('unavailable')));
       loadTimeout = setTimeout(() => finish('unavailable'), 15_000);
