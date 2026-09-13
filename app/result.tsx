@@ -62,6 +62,8 @@ export default function ResultScreen() {
         <View style={styles.deviceCopy}>
           <Text style={[styles.deviceName, { color: colors.text }]}>{applianceName}</Text>
           <Text style={[styles.deviceDetails, { color: colors.textMuted }]}>{t('result.details', { watts: formatNumber(input.powerWatts, settings.locale, 0), hours: formatNumber(input.hoursPerDay, settings.locale, input.hoursPerDay % 1 ? 1 : 0), days: input.daysPerMonth })}</Text>
+          {input.quantity && input.quantity > 1 ? <Text style={[styles.deviceDetails, { color: colors.textMuted }]}>{t('result.quantity', { count: input.quantity })}</Text> : null}
+          {input.room ? <Text style={[styles.deviceDetails, { color: colors.textMuted }]}>{t('result.room', { room: input.room })}</Text> : null}
           <Text style={[styles.deviceDetails, { color: colors.textMuted }]}>{t('result.tariff', { value: formatCurrency(input.tariffPerKwh, settings.locale, currentSimulation.currency) })}</Text>
         </View>
       </Card>
