@@ -30,7 +30,10 @@ export function RewardedCard({ title, description, duration, feature, icon = 'gi
       setLoading(false);
     }
   };
-  const time = activeUntil ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(activeUntil)) : '';
+  const expiryDate = activeUntil ? new Date(activeUntil) : null;
+  const time = expiryDate && !Number.isNaN(expiryDate.getTime())
+    ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(expiryDate)
+    : '';
   return (
     <Card tone="reward" style={styles.card}>
       <View style={styles.copy}>
