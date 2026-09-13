@@ -48,8 +48,8 @@ export default function ResultScreen() {
     }
   };
 
-  const calculateAnother = () => {
-    void maybeShowInterstitial();
+  const calculateAnother = async () => {
+    await maybeShowInterstitial();
     resetCalculation();
     router.replace('/calculate');
   };
