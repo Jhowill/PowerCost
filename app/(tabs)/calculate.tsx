@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Button, Card, Choice, Field, Header, Page, SectionLabel } from '../../src/components/ui';
@@ -22,6 +22,11 @@ export default function CalculateScreen() {
   const [roomText, setRoomText] = useState(draft.room ?? '');
   const [saveTariff, setSaveTariff] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setQuantityText(String(draft.quantity ?? 1));
+    setRoomText(draft.room ?? '');
+  }, [draft.quantity, draft.room]);
 
   const appliances = useMemo(() => APPLIANCES.filter((item) => t(item.nameKey).toLocaleLowerCase(settings.locale).includes(search.toLocaleLowerCase(settings.locale))), [search, settings.locale, t]);
   const selected = APPLIANCES.find((item) => item.id === draft.applianceId);
