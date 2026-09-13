@@ -14,6 +14,7 @@ import {
   CalculationDraft,
   CurrencyCode,
   EnergyPlan,
+  EnergyPlanPeriod,
   RewardedFeature,
   SavedSimulation,
   SupportedLocale,
@@ -57,8 +58,9 @@ const DEFAULT_ADS: AdsState = {
 };
 
 const DEFAULT_PLAN: EnergyPlan = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   currency: DEFAULT_SETTINGS.currency,
+  periods: [],
   actions: [],
   updatedAt: now(),
 };
@@ -192,8 +194,9 @@ const normalizePlan = (raw: string | null, fallbackCurrency: CurrencyCode): Ener
   return {
     ...DEFAULT_PLAN,
     ...value,
-    schemaVersion: 2,
+    schemaVersion: 3,
     currency: ['BRL', 'USD', 'EUR'].includes(value.currency ?? '') ? value.currency as CurrencyCode : fallbackCurrency,
+    periods: Array.isArray(value.periods) ? value.periods.filter((period): period is EnergyPlanPeriod => Boolean(period && typeof period === 'object' && typeof period.id === 'string' && typeof period.label === 'string' && typeof period.createdAt === 'string' && !Number.isNaN(Date.parse(period.createdAt)) && (period.measuredMonthlyKwh === undefined || (typeof period.measuredMonthlyKwh === 'number' && period.measuredMonthlyKwh > 0)) && (period.measuredMonthlyCost === undefined || (typeof period.measuredMonthlyCost === 'number' && period.measuredMonthlyCost > 0)))) .slice(0, 24) : [],
     actions: Array.isArray(value.actions) ? value.actions.filter((item): item is string => typeof item === 'string') : [],
     targetMonthlyCost: typeof value.targetMonthlyCost === 'number' && value.targetMonthlyCost > 0 ? value.targetMonthlyCost : undefined,
     measuredMonthlyKwh: typeof value.measuredMonthlyKwh === 'number' && value.measuredMonthlyKwh > 0 ? value.measuredMonthlyKwh : undefined,
