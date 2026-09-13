@@ -244,15 +244,24 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     if (!hydrated || !adsInitialized) return;
-
+    let wasBackgrounded = false;
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active' && internetAvailable && !isActiveUntil(ads.adFreeUntil)) {
-        void showAppOpenAd();
+      if (nextState === 'background' || nextState === 'inactive') {
+        wasBackgrounded = true;
+        return;
+      }
+      if (nextState === 'active' && wasBackgrounded) {
+        wasBackgrounded = false;
+        if (internetAvailable && !isActiveUntil(ads.adFreeUntil)) void showAppOpenAd();
       }
     });
     return () => subscription.remove();
   }, [ads.adFreeUntil, adsInitialized, hydrated, internetAvailable]);
 
+  useEffect(() => {
+    const timer = setInterval(() => setClock((value) => value + 1), 60_000);
+    return () => clearInterval(timer);
+  }, []);
   useEffect(() => {
     if (hydrated) void AsyncStorage.setItem(STORAGE.settings, JSON.stringify(settings)).catch(() => undefined);
   }, [hydrated, settings]);
