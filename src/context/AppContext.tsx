@@ -184,7 +184,7 @@ const normalizeHistory = (raw: string | null, fallbackCurrency: CurrencyCode): S
   if (!Array.isArray(value)) return [];
   return value.filter(isSavedSimulation).map((item) => ({
     ...item,
-    currency: item.currency ?? fallbackCurrency,
+    currency: ['BRL', 'USD', 'EUR'].includes(item.currency ?? '') ? item.currency as CurrencyCode : fallbackCurrency,
     input: { ...item.input, quantity: Math.max(1, item.input.quantity ?? 1), room: typeof item.input.room === 'string' ? item.input.room.trim() || undefined : undefined },
   }));
 };
