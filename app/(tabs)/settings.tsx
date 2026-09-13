@@ -8,10 +8,10 @@ import { RewardedCard } from '../../src/components/RewardedCard';
 import { Button, Card, Field, Header, OptionModal, Page, SectionLabel, SettingRow } from '../../src/components/ui';
 import { useApp } from '../../src/context/AppContext';
 import { PUBLIC_LINKS } from '../../src/config/publicLinks';
-import { AppTheme, SupportedLocale } from '../../src/types';
+import { AppTheme, CurrencyCode, SupportedLocale } from '../../src/types';
 import { formatCurrency, formatCurrencySymbol, parseDecimal } from '../../src/utils/calculation';
 
-const localeNames: Record<SupportedLocale, string> = { 'pt-BR': 'Português', 'en-US': 'English', 'es-ES': 'Español', 'fr-FR': 'Français' };
+const localeNames: Record<SupportedLocale, string> = { 'pt-BR': 'Português', 'en-US': 'English', 'es-ES': 'Español', 'fr-FR': 'Français' };\nconst currencyNames: Record<CurrencyCode, string> = { BRL: 'Real brasileiro (BRL)', USD: 'Dólar americano (USD)', EUR: 'Euro (EUR)' };
 
 export default function SettingsScreen() {
   const { colors, t, settings, ads, setLocale, setTheme, setDefaultTariff, clearHistory, clearAllLocalData, openAdsPrivacyOptions } = useApp();
@@ -86,6 +86,14 @@ export default function SettingsScreen() {
         options={(Object.entries(localeNames) as [SupportedLocale, string][]).map(([value, label]) => ({ value, label }))}
         onSelect={(value) => setLocale(value as SupportedLocale)}
         onClose={() => setLanguageOpen(false)}
+      />
+      <OptionModal
+        visible={currencyOpen}
+        title={t('settings.currency')}
+        selected={settings.currency}
+        options={(Object.entries(currencyNames) as [CurrencyCode, string][]).map(([value, label]) => ({ value, label }))}
+        onSelect={() => setCurrencyOpen(false)}
+        onClose={() => setCurrencyOpen(false)}
       />
       <OptionModal
         visible={themeOpen}
