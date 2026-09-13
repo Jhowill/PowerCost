@@ -14,7 +14,7 @@ import { formatCurrency, formatCurrencySymbol, parseDecimal } from '../../src/ut
 const localeNames: Record<SupportedLocale, string> = { 'pt-BR': 'Português', 'en-US': 'English', 'es-ES': 'Español', 'fr-FR': 'Français' };\nconst currencyNames: Record<CurrencyCode, string> = { BRL: 'Real brasileiro (BRL)', USD: 'Dólar americano (USD)', EUR: 'Euro (EUR)' };
 
 export default function SettingsScreen() {
-  const { colors, t, settings, ads, setLocale, setTheme, setDefaultTariff, clearHistory, clearAllLocalData, openAdsPrivacyOptions } = useApp();
+  const { colors, t, settings, ads, setLocale, setCurrency, setTheme, setDefaultTariff, clearHistory, clearAllLocalData, openAdsPrivacyOptions } = useApp();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [tariffText, setTariffText] = useState(String(settings.defaultTariffPerKwh ?? 0.9).replace('.', ','));
@@ -92,7 +92,7 @@ export default function SettingsScreen() {
         title={t('settings.currency')}
         selected={settings.currency}
         options={(Object.entries(currencyNames) as [CurrencyCode, string][]).map(([value, label]) => ({ value, label }))}
-        onSelect={() => setCurrencyOpen(false)}
+        onSelect={(value) => { setCurrency(value as CurrencyCode); setCurrencyOpen(false); }}
         onClose={() => setCurrencyOpen(false)}
       />
       <OptionModal
