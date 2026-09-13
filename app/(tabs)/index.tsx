@@ -41,7 +41,7 @@ export default function HomeScreen() {
         <QuickCard icon="bar-chart-outline" title={t('home.compare')} subtitle={t('home.compareHint')} onPress={() => router.push('/compare')} />
       </View>
 
-      <Pressable accessibilityRole="button" onPress={() => router.push('/plan')}>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/plan' as never)}>
         <Card style={styles.planCard}>
           <View style={[styles.planIcon, { backgroundColor: colors.primarySoft }]}><Ionicons name="home-outline" size={24} color={colors.primary} /></View>
           <View style={styles.planCopy}>
