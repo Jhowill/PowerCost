@@ -136,6 +136,8 @@ const normalizeSettings = (raw: string | null): AppSettings => {
   };
 };
 
+const validIsoDate = (value: unknown) => typeof value === 'string' && !Number.isNaN(Date.parse(value)) ? value : undefined;
+
 const normalizeAds = (raw: string | null): AdsState => {
   const value = safeParse<Partial<AdsState>>(raw, {});
   if (value.schemaVersion !== 2) return DEFAULT_ADS;
