@@ -22,7 +22,7 @@ Esta Política de Privacidade explica como o aplicativo PowerCost, publicado por
 O aplicativo armazena no aparelho:
 
 - dados informados nos cálculos, como aparelho, potência, tempo de uso, dias e tarifa;
-- resultados, histórico, comparações e dados opcionais do planejamento da casa, como cômodo, quantidade, meta mensal, valores de fatura e evolução por período;
+- resultados, histórico, comparações e dados opcionais do planejamento da casa, como cômodo, quantidade, meta mensal, moedas, faturas por mês, cópias das estimativas e ações escolhidas por período;
 - idioma, tema e tarifa padrão;
 - estado de recursos temporários liberados por anúncios premiados;
 - controles internos de frequência de anúncios.
@@ -49,7 +49,9 @@ No iOS, o acesso ao identificador de publicidade e qualquer rastreamento entre a
 
 ### 5. Anúncios premiados e internet
 
-Os anúncios premiados são opcionais. Um benefício temporário é liberado somente quando o SDK confirma o evento de recompensa após a conclusão do anúncio. Falha, fechamento antecipado, indisponibilidade ou ausência de internet não liberam o benefício. Extras associados a publicidade exigem internet, não possuem valor monetário e podem variar por região ou inventário.
+Os anúncios premiados são opcionais. Um benefício temporário é liberado somente quando o SDK confirma o evento de recompensa após a conclusão do anúncio. Sem confirmação de recompensa, falha, fechamento antecipado ou indisponibilidade não liberam o benefício. A internet e o inventário são necessários para assistir a um novo anúncio. Uma recompensa já confirmada permanece disponível offline até sua expiração; queda de conexão ou erro posterior não revoga o benefício. Os benefícios não possuem valor monetário.
+
+Denúncias de anúncios podem ser preparadas em Ajustes > Denunciar anúncio inadequado. O formulário abre o GitHub e nada é enviado automaticamente. Se você enviar, o conteúdo ficará público e poderá exigir conta no GitHub; não inclua dados pessoais, identificadores ou faturas. O aplicativo não anexa o histórico ou os dados da casa. Banner, intersticial previamente carregado e premiado são os formatos exibidos; App Open automático e anúncios nativos não são exibidos nesta versão.
 
 ### 6. Compartilhamento e transferências internacionais
 
@@ -91,7 +93,7 @@ This Privacy Policy explains how PowerCost, published by Jhowill, handles inform
 
 ### 2. Information stored locally
 
-PowerCost stores calculation inputs and results, history, comparisons, optional room and quantity metadata, household-plan targets and bill values, language, theme, default electricity rate, temporary rewarded-ad benefits, and internal ad-frequency controls on the device. This information is used to provide requested features and restore preferences. PowerCost does not send it to its own server. Connectivity is checked to determine whether ads and online extras can work; PowerCost does not create a network-history profile from this check.
+PowerCost stores calculation inputs and results, history, comparisons, optional room and quantity metadata, independent household appliances, currencies, monthly bill periods, targets, estimate snapshots and selected actions, language, theme, default electricity rate, temporary rewarded-ad benefits, and internal ad-frequency controls on the device. This information is used to provide requested features and restore preferences. PowerCost does not send it to its own server. Connectivity is checked to determine whether ads and online extras can work; PowerCost does not create a network-history profile from this check.
 
 ### 3. Advertising and third-party data
 
@@ -105,7 +107,9 @@ Where required, PowerCost requests consent choices through the User Messaging Pl
 
 ### 5. Rewarded ads and internet
 
-Rewarded ads are optional. A temporary benefit is granted only after the SDK confirms the earned-reward event following ad completion. Failure, early closure, unavailability, or no internet does not grant a benefit. Ad-related extras require internet, have no monetary value, and may vary by region or inventory.
+Rewarded ads are optional. A temporary benefit is granted only after the SDK confirms the earned-reward event following ad completion. Without reward confirmation, failure, early closure or unavailability does not grant a benefit. Internet and inventory are required to watch a new ad. A confirmed benefit remains usable offline until expiry; a later network failure or ad error does not revoke it. Benefits have no monetary value.
+
+Ad reports can be prepared under Settings > Report inappropriate ad. The form opens GitHub; nothing is sent automatically. If submitted, its content will be public and a GitHub account may be required; do not include personal data, identifiers or bills. The app does not attach history or household data. This version displays banners, preloaded interstitials and rewarded ads; automatic App Open and native ads are not displayed.
 
 ### 6. Sharing and international transfers
 
@@ -137,7 +141,7 @@ Esta Política explica cómo PowerCost, publicado por Jhowill, trata informació
 
 ### 2. Datos locales
 
-La aplicación guarda en el dispositivo los datos y resultados de los cálculos, historial, comparaciones, datos opcionales de habitación y cantidad, objetivos y facturas del plan del hogar, idioma, tema, tarifa, beneficios temporales y controles de frecuencia publicitaria. Se usan para prestar las funciones y restaurar preferencias, y PowerCost no los envía a un servidor propio. La conectividad se comprueba para habilitar anuncios y extras online, sin crear un historial de red.
+La aplicación guarda en el dispositivo los datos y resultados de los cálculos, historial, comparaciones, datos opcionales de habitación y cantidad, aparatos independientes del hogar, monedas, períodos de facturas, metas, copias de estimaciones y acciones elegidas, idioma, tema, tarifa, beneficios temporales y controles de frecuencia publicitaria. Se usan para prestar las funciones y restaurar preferencias, y PowerCost no los envía a un servidor propio. La conectividad se comprueba para habilitar anuncios y extras online, sin crear un historial de red.
 
 ### 3. Publicidad y terceros
 
@@ -149,7 +153,9 @@ Cuando sea obligatorio, se solicitan opciones mediante User Messaging Platform a
 
 ### 5. Anuncios premiados
 
-Son opcionales. El beneficio temporal solo se concede cuando el SDK confirma el evento de recompensa después de completar el anuncio. Un fallo, cierre anticipado, falta de inventario o ausencia de internet no concede el beneficio. Los extras requieren internet y no tienen valor monetario.
+Son opcionales. El beneficio temporal solo se concede cuando el SDK confirma el evento de recompensa después de completar el anuncio. Sin confirmación de recompensa, un fallo, cierre anticipado o falta de inventario no concede el beneficio. Internet e inventario son necesarios para ver un anuncio nuevo. Los beneficios confirmados siguen disponibles sin conexión hasta caducar y no se revocan por un fallo posterior. No tienen valor monetario.
+
+Puedes preparar denuncias en Ajustes > Denunciar anuncio inapropiado. Se abre GitHub sin enviar nada automáticamente. Si la envías, será pública y puede requerir cuenta en GitHub; no incluyas datos personales, identificadores ni facturas. No se adjunta el historial ni los datos del hogar. Esta versión muestra banners, intersticiales precargados y anuncios premiados; no muestra App Open automático ni anuncios nativos.
 
 ### 6. Conservación, eliminación y seguridad
 
@@ -169,7 +175,7 @@ Cette Politique explique comment PowerCost, publié par Jhowill, traite les info
 
 ### 2. Données locales
 
-L’app conserve sur l’appareil les données et résultats des calculs, l’historique, les comparaisons, les données facultatives de pièce et de quantité, les objectifs et factures du plan du foyer, la langue, le thème, le tarif, les avantages temporaires et les contrôles de fréquence publicitaire. Ces éléments servent aux fonctions demandées et aux préférences; PowerCost ne les envoie pas à son propre serveur. La connexion est vérifiée pour les annonces et extras en ligne, sans création d’un historique réseau.
+L’app conserve sur l’appareil les données et résultats des calculs, l’historique, les comparaisons, les données facultatives de pièce et de quantité, les appareils indépendants du foyer, devises, périodes de facturation, objectifs, estimations conservées et actions choisies, la langue, le thème, le tarif, les avantages temporaires et les contrôles de fréquence publicitaire. Ces éléments servent aux fonctions demandées et aux préférences; PowerCost ne les envoie pas à son propre serveur. La connexion est vérifiée pour les annonces et extras en ligne, sans création d’un historique réseau.
 
 ### 3. Publicité et tiers
 
@@ -181,7 +187,9 @@ Lorsque nécessaire, User Messaging Platform recueille les choix avant d’autor
 
 ### 5. Annonces récompensées
 
-Elles sont facultatives. Un avantage temporaire n’est accordé qu’après confirmation de l’événement de récompense par le SDK à la fin de l’annonce. Échec, fermeture anticipée, indisponibilité ou absence d’Internet n’accordent rien. Les extras nécessitent Internet et n’ont aucune valeur monétaire.
+Elles sont facultatives. Un avantage temporaire n’est accordé qu’après confirmation de l’événement de récompense par le SDK à la fin de l’annonce. Sans confirmation de récompense, un échec, une fermeture anticipée ou une indisponibilité n’accordent rien. Internet et un inventaire sont nécessaires pour regarder une nouvelle annonce. Un avantage confirmé reste utilisable hors ligne jusqu’à expiration et n’est pas révoqué par un échec ultérieur. Il n’a aucune valeur monétaire.
+
+Les signalements sont préparés dans Réglages > Signaler une publicité inappropriée. Le formulaire ouvre GitHub sans envoi automatique. Si vous l’envoyez, son contenu sera public et un compte GitHub peut être nécessaire ; n’incluez ni données personnelles, ni identifiants, ni factures. L’app ne joint ni historique ni données du foyer. Cette version affiche des bannières, interstitiels préchargés et annonces récompensées ; pas d’App Open automatique ni d’annonces natives.
 
 ### 6. Conservation, suppression et sécurité
 

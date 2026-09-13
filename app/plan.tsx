@@ -1,147 +1,166 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-
-import { BannerAdSlot } from '../src/components/BannerAdSlot';
-import { Button, Card, EmptyState, Field, Header, Page, SectionLabel } from '../src/components/ui';
+import React, { useEffect, useState } from 'react';
+import { Alert, Pressable, Text, View } from 'react-native';
+import { Button, Card, Field, Header, Page, SectionLabel } from '../src/components/ui';
 import { useApp } from '../src/context/AppContext';
+import { CurrencyCode, EnergyPlanPeriod } from '../src/types';
 import { formatCurrency, formatNumber, parseDecimal } from '../src/utils/calculation';
+import { localMonth, validMonth } from '../src/utils/persistence';
 
-const ACTIONS = [
-  { id: 'standby', label: 'plan.actionStandby' },
-  { id: 'schedule', label: 'plan.actionSchedule' },
-  { id: 'temperature', label: 'plan.actionTemperature' },
-  { id: 'lighting', label: 'plan.actionLighting' },
-] as const;
+const ACTIONS = ['standby', 'schedule', 'temperature', 'lighting'] as const;
+const ACTION_KEYS = ['plan.actionStandby', 'plan.actionSchedule', 'plan.actionTemperature', 'plan.actionLighting'];
 
 export default function PlanScreen() {
-  const { colors, t, history, settings, plan, updatePlan } = useApp();
-  const [targetText, setTargetText] = useState(plan.targetMonthlyCost ? String(plan.targetMonthlyCost).replace('.', ',') : '');
-  const [measuredKwhText, setMeasuredKwhText] = useState(plan.measuredMonthlyKwh ? String(plan.measuredMonthlyKwh).replace('.', ',') : '');
-  const [measuredCostText, setMeasuredCostText] = useState(plan.measuredMonthlyCost ? String(plan.measuredMonthlyCost).replace('.', ',') : '');
-  const planMatchesCurrency = plan.currency === settings.currency;
+  const { colors, t, settings, plan, history, updatePlan, recalculate, resetCalculation, storageError } = useApp();
+  const [month, setMonth] = useState(localMonth);
+  const [unit, setUnit] = useState<CurrencyCode>(settings.currency);
+  const [targetText, setTarget] = useState('');
+  const [kwhText, setKwh] = useState('');
+  const [costText, setCost] = useState('');
+  const [error, setError] = useState('');
+  const [showImport, setShowImport] = useState(false);
+  const period = plan.periods.find((p) => p.id === month && p.currency === unit);
   useEffect(() => {
-    if (!planMatchesCurrency) {
-      setTargetText('');
-      setMeasuredKwhText('');
-      setMeasuredCostText('');
+    setTarget(String(period ? period.targetMonthlyCost ?? '' : plan.targets[unit] ?? ''));
+    setKwh(String(period?.measuredMonthlyKwh ?? ''));
+    setCost(String(period?.measuredMonthlyCost ?? ''));
+    setError('');
+  }, [month, unit, period, plan.targets]);
+
+  const appliances = plan.appliances;
+  const priced = appliances.filter((a) => a.currency === unit);
+  const total = priced.reduce((sum, a) => sum + a.result.costPerMonth, 0);
+  const totalKwh = appliances.reduce((sum, a) => sum + a.result.consumptionKwhMonth, 0);
+  const money = (value: number, currency = unit) => formatCurrency(value, settings.locale, currency);
+  const num = (value: number) => formatNumber(value, settings.locale, 1);
+  const monthLabel = (id: string) => validMonth(id)
+    ? new Intl.DateTimeFormat(settings.locale, { month: 'long', year: 'numeric' }).format(new Date(Number(id.slice(0, 4)), Number(id.slice(5, 7)) - 1, 15))
+    : id;
+  const sorted = [...plan.periods].sort((a, b) => b.id.localeCompare(a.id) || a.currency.localeCompare(b.currency));
+  const previous = period ? sorted.find((p) => p.id < period.id && p.currency === period.currency) : undefined;
+  const target = plan.targets[unit];
+  const rooms = new Map<string, { cost: number; kwh: number }>();
+  for (const a of appliances) {
+    const name = a.input.room || t('plan.unassigned');
+    const current = rooms.get(name) ?? { cost: 0, kwh: 0 };
+    rooms.set(name, { cost: current.cost + (a.currency === unit ? a.result.costPerMonth : 0), kwh: current.kwh + a.result.consumptionKwhMonth });
+  }
+  const parseOptional = (text: string) => text.trim() ? parseDecimal(text) : undefined;
+  const save = () => {
+    const goal = parseOptional(targetText), kwh = parseOptional(kwhText), cost = parseOptional(costText);
+    if (!validMonth(month) || [goal, kwh, cost].some((v) => v !== undefined && (!Number.isFinite(v) || v < 0 || v > 1e12)) || goal === 0) {
+      setError(t('house.invalid')); return;
     }
-  }, [planMatchesCurrency]);
-  const estimates = useMemo(() => history.filter((item) => item.currency === settings.currency), [history, settings.currency]);
-  const total = estimates.reduce((sum, item) => sum + item.result.costPerMonth, 0);
-  const rooms = useMemo(() => {
-    const grouped = new Map<string, number>();
-    estimates.forEach((item) => {
-      const room = item.input.room?.trim() || t('plan.unassigned');
-      grouped.set(room, (grouped.get(room) ?? 0) + item.result.costPerMonth);
-    });
-    return [...grouped.entries()].sort((a, b) => b[1] - a[1]);
-  }, [estimates, t]);
-  const target = planMatchesCurrency ? plan.targetMonthlyCost : undefined;
-  const gap = target ? total - target : 0;
-  const savePlan = () => {
-    const targetValue = parseDecimal(targetText);
-    const kwhValue = parseDecimal(measuredKwhText);
-    const costValue = parseDecimal(measuredCostText);
-    const measuredKwh = Number.isFinite(kwhValue) && kwhValue > 0 ? kwhValue : undefined;
-    const measuredCost = Number.isFinite(costValue) && costValue > 0 ? costValue : undefined;
-    const periodId = new Date().toISOString().slice(0, 7);
-    const periodLabel = new Intl.DateTimeFormat(settings.locale, { month: 'short', year: 'numeric' }).format(new Date());
-    const nextPeriods = measuredKwh || measuredCost
-      ? [{ id: periodId, label: periodLabel, measuredMonthlyKwh: measuredKwh, measuredMonthlyCost: measuredCost, createdAt: new Date().toISOString() }, ...plan.periods.filter((period) => period.id !== periodId)].slice(0, 24)
-      : plan.periods;
+    const hasBill = kwh !== undefined || cost !== undefined;
+    const next: EnergyPlanPeriod = {
+      id: month, label: month, currency: unit, targetMonthlyCost: goal,
+      measuredMonthlyKwh: kwh, measuredMonthlyCost: cost,
+      estimatedKwh: period ? period.estimatedKwh : totalKwh,
+      estimatedCost: period ? period.estimatedCost : total,
+      actions: period?.actions ?? [...plan.actions],
+      createdAt: period?.createdAt ?? new Date().toISOString(),
+    };
+    if (period && !hasBill) { setError(t('house.invalid')); return; }
     updatePlan({
-      targetMonthlyCost: Number.isFinite(targetValue) && targetValue > 0 ? targetValue : undefined,
-      measuredMonthlyKwh: measuredKwh,
-      measuredMonthlyCost: measuredCost,
-      periods: nextPeriods,
+      currency: unit, targetMonthlyCost: goal,
+      targets: { ...plan.targets, [unit]: goal },
+      periods: hasBill ? [next, ...plan.periods.filter((p) => !(p.id === month && p.currency === unit))] : plan.periods,
     });
+    setError('');
+    Alert.alert(t('common.done'));
   };
-  const toggleAction = (id: string) => updatePlan({ actions: plan.actions.includes(id) ? plan.actions.filter((item) => item !== id) : [...plan.actions, id] });
+  const removePeriod = (p: EnergyPlanPeriod) => Alert.alert(t('house.remove'), monthLabel(p.id) + ' · ' + p.currency, [
+    { text: t('common.cancel'), style: 'cancel' },
+    { text: t('house.remove'), style: 'destructive', onPress: () => updatePlan({ periods: plan.periods.filter((v) => !(v.id === p.id && v.currency === p.currency)) }) },
+  ]);
+  const textStyle = { color: colors.text, fontSize: 15, lineHeight: 23 };
+  return <Page>
+    <Header title={t('plan.title')} subtitle={t('house.independent')} back onBack={() => router.back()} />
+    <Card tone="primary">
+      <Text style={textStyle}>{t('plan.estimate')}</Text>
+      <Text style={{ color: colors.primary, fontSize: 30, fontWeight: '800' }}>{money(total)}</Text>
+      <Text style={textStyle}>{num(totalKwh)} kWh/{t('result.perMonth')}</Text>
+      <Text style={textStyle}>{t('house.allCurrencies', { currency: unit })}</Text>
+      {target !== undefined ? <Text style={textStyle}>{total > target ? t('plan.aboveTarget', { value: money(total - target) }) : t('plan.withinTarget')}</Text> : null}
+    </Card>
 
-  return (
-    <Page>
-      <Header title={t('plan.title')} subtitle={t('plan.subtitle')} back onBack={() => router.back()} />
-      <Card tone="primary" style={styles.summary}>
-        <Text style={[styles.summaryLabel, { color: colors.text }]}>{t('plan.estimate')}</Text>
-        <Text style={[styles.summaryValue, { color: colors.primary }]}>{formatCurrency(total, settings.locale, settings.currency)}{t('plan.perMonth')}</Text>
-        <Text style={[styles.summaryText, { color: colors.textMuted }]}>
-          {target ? (gap > 0 ? t('plan.aboveTarget', { value: formatCurrency(gap, settings.locale, settings.currency) }) : t('plan.withinTarget')) : t('plan.noTarget')}
-        </Text>
-      </Card>
-
-      <SectionLabel>{t('plan.measurement')}</SectionLabel>
-      {!planMatchesCurrency ? <Card style={styles.comparison}><Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.currencyChanged')}</Text></Card> : null}
-      <Card style={styles.form}>
-        <Text style={[styles.formHint, { color: colors.textMuted }]}>{t('plan.measurementHint')}</Text>
-        <Field label={t('plan.target')} value={targetText} onChangeText={setTargetText} keyboardType="decimal-pad" unit={settings.currency} />
-        <Field label={t('plan.measuredKwh')} value={measuredKwhText} onChangeText={setMeasuredKwhText} keyboardType="decimal-pad" unit="kWh" />
-        <Field label={t('plan.measuredCost')} value={measuredCostText} onChangeText={setMeasuredCostText} keyboardType="decimal-pad" unit={settings.currency} />
-        <Button label={t('plan.save')} onPress={savePlan} icon="save-outline" />
-      </Card>
-
-      {planMatchesCurrency && (plan.measuredMonthlyKwh || plan.measuredMonthlyCost) ? (
-        <Card style={styles.comparison}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('plan.invoiceComparison')}</Text>
-          {plan.measuredMonthlyKwh ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.measuredKwhValue', { value: formatNumber(plan.measuredMonthlyKwh, settings.locale, 1) })}</Text> : null}
-          {plan.measuredMonthlyCost ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.measuredCostValue', { value: formatCurrency(plan.measuredMonthlyCost, settings.locale, settings.currency) })}</Text> : null}
-          <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.unexplained', { value: formatCurrency(Math.abs((plan.measuredMonthlyCost ?? total) - total), settings.locale, settings.currency) })}</Text>
-        </Card>
-      ) : null}
-
-      {planMatchesCurrency && plan.periods.length ? (
-        <>
-          <SectionLabel>{t('plan.periods')}</SectionLabel>
-          {plan.periods.slice(0, 6).map((period) => (
-            <Card key={period.id} style={styles.periodCard}>
-              <Text style={[styles.roomName, { color: colors.text }]}>{period.label}</Text>
-              {period.measuredMonthlyKwh ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{formatNumber(period.measuredMonthlyKwh, settings.locale, 1)} kWh</Text> : null}
-              {period.measuredMonthlyCost ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{formatCurrency(period.measuredMonthlyCost, settings.locale, settings.currency)}</Text> : null}
-            </Card>
-          ))}
-        </>
-      ) : null}
-
+    {rooms.size ? <Card>
       <SectionLabel>{t('plan.rooms')}</SectionLabel>
-      {rooms.length ? rooms.map(([room, value]) => (
-        <Card key={room} style={styles.roomCard}>
-          <View style={[styles.roomIcon, { backgroundColor: colors.primarySoft }]}><Ionicons name="home-outline" size={21} color={colors.primary} /></View>
-          <View style={styles.roomCopy}><Text style={[styles.roomName, { color: colors.text }]}>{room}</Text><Text style={[styles.cardText, { color: colors.textMuted }]}>{formatCurrency(value, settings.locale, settings.currency)}{t('plan.perMonth')}</Text></View>
-        </Card>
-      )) : <EmptyState icon="home-outline" title={t('plan.emptyTitle')} text={t('plan.emptyText')} action={t('plan.add')} onAction={() => router.push('/calculate')} />}
+      {[...rooms.entries()].map(([name, values]) => <Text key={name} style={textStyle}>{name}: {num(values.kwh)} kWh · {money(values.cost)}</Text>)}
+    </Card> : null}
+    <SectionLabel>{t('house.inventory')}</SectionLabel>
+    {!appliances.length ? <Text style={textStyle}>{t('house.empty')}</Text> : null}
+    {appliances.map((a) => <Card key={a.id}>
+      <Text style={{ ...textStyle, fontWeight: '800' }}>{a.input.applianceNameKey ? t(a.input.applianceNameKey) : a.input.applianceName}</Text>
+      <Text style={textStyle}>{a.input.room || t('plan.unassigned')} · {a.input.quantity ?? 1} × {a.input.powerWatts} W</Text>
+      <Text style={textStyle}>{num(a.result.consumptionKwhMonth)} kWh · {money(a.result.costPerMonth, a.currency)}</Text>
+      <Button label={t('house.edit')} disabled={storageError} variant="outline" onPress={() => {
+        recalculate({ ...a, input: { ...a.input, householdId: a.id } }); router.push('/calculate');
+      }} />
+      <Button label={t('house.remove')} disabled={storageError} variant="ghost" onPress={() => Alert.alert(t('house.remove'), t('house.confirmRemove'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('house.remove'), style: 'destructive', onPress: () => updatePlan({ appliances: appliances.filter((v) => v.id !== a.id) }) },
+      ])} />
+    </Card>)}
+    <Button label={t('plan.add')} disabled={storageError} icon="add-circle-outline" onPress={() => { resetCalculation(); router.push('/calculate'); }} />
+    <Button label={t('house.import')} disabled={storageError} variant="outline" onPress={() => setShowImport((v) => !v)} />
+    {showImport ? <Card>
+      <Text style={textStyle}>{t('house.importHint')}</Text>
+      {history.map((a) => {
+        const id = a.input.householdId ?? a.id;
+        return <Button key={a.id} disabled={appliances.some((v) => v.id === id) || storageError}
+          label={a.input.applianceNameKey ? t(a.input.applianceNameKey) : a.input.applianceName} variant="outline"
+          onPress={() => updatePlan({ appliances: [{ ...a, id, input: { ...a.input, householdId: id } }, ...appliances.filter((v) => v.id !== id)] })} />;
+      })}
+    </Card> : null}
 
-      <SectionLabel>{t('plan.actions')}</SectionLabel>
-      <Card style={styles.actions}>
-        {ACTIONS.map((action) => {
-          const selected = plan.actions.includes(action.id);
-          return <Pressable key={action.id} accessibilityRole="checkbox" accessibilityState={{ checked: selected }} onPress={() => toggleAction(action.id)} style={styles.actionRow}>
-            <Ionicons name={selected ? 'checkbox' : 'square-outline'} size={25} color={selected ? colors.primary : colors.textMuted} />
-            <Text style={[styles.actionText, { color: colors.text }]}>{t(action.label)}</Text>
-          </Pressable>;
-        })}
-      </Card>
-      <BannerAdSlot />
-    </Page>
-  );
+    <SectionLabel>{t('plan.actions')}</SectionLabel>
+    <Card>{ACTIONS.map((id, index) => <Pressable key={id} disabled={storageError} accessibilityRole="checkbox"
+      accessibilityState={{ checked: plan.actions.includes(id) }} style={{ flexDirection: 'row', gap: 10, paddingVertical: 12 }}
+      onPress={() => updatePlan({ actions: plan.actions.includes(id) ? plan.actions.filter((v) => v !== id) : [...plan.actions, id] })}>
+      <Ionicons name={plan.actions.includes(id) ? 'checkbox' : 'square-outline'} size={24} color={colors.primary} />
+      <Text style={{ ...textStyle, flex: 1 }}>{t(ACTION_KEYS[index])}</Text>
+    </Pressable>)}
+    <Text style={textStyle}>{t('house.actionsSnapshot')}</Text></Card>
+
+    <SectionLabel>{t('plan.measurement')}</SectionLabel>
+    <Card>
+      <Field label={t('house.period')} value={month} onChangeText={setMonth} placeholder="YYYY-MM" />
+      <Text style={textStyle}>{t('house.periodHelp')}</Text>
+      <View style={{ flexDirection: 'row', gap: 8 }}>{(['BRL', 'USD', 'EUR'] as const).map((c) =>
+        <Button key={c} label={c} variant={c === unit ? 'primary' : 'outline'} onPress={() => setUnit(c)} />)}</View>
+      <Field label={t('plan.target')} value={targetText} onChangeText={setTarget} keyboardType="decimal-pad" unit={unit} />
+      <Field label={t('plan.measuredKwh')} value={kwhText} onChangeText={setKwh} keyboardType="decimal-pad" unit="kWh" />
+      <Field label={t('plan.measuredCost')} value={costText} onChangeText={setCost} keyboardType="decimal-pad" unit={unit} />
+      {error ? <Text accessibilityLiveRegion="polite" style={{ color: colors.danger }}>{error}</Text> : null}
+      <Text style={textStyle}>{t('house.estimateSnapshot')}</Text>
+      <Button label={t('plan.save')} onPress={save} disabled={storageError} />
+    </Card>
+
+    {period ? <Card>
+      <Text style={{ ...textStyle, fontWeight: '800' }}>{t('plan.invoiceComparison')} · {monthLabel(period.id)}</Text>
+      {period.targetMonthlyCost !== undefined ? <Text style={textStyle}>{t('plan.target')}: {money(period.targetMonthlyCost)}</Text> : null}
+      {period.measuredMonthlyKwh !== undefined && period.estimatedKwh !== undefined ?
+        <Text style={textStyle}>{t('house.differenceKwh', { value: num(period.measuredMonthlyKwh - period.estimatedKwh) })}</Text> : null}
+      {period.measuredMonthlyCost !== undefined && period.estimatedCost !== undefined ?
+        <Text style={textStyle}>{t('house.differenceCost', { value: money(period.measuredMonthlyCost - period.estimatedCost) })}</Text> : null}
+      {period.estimatedKwh === undefined && period.estimatedCost === undefined ? <Text style={textStyle}>{t('house.missingComparison')}</Text> : null}
+      {previous?.measuredMonthlyKwh !== undefined && period.measuredMonthlyKwh !== undefined ?
+        <Text style={textStyle}>{t('house.previousKwh', { value: num(period.measuredMonthlyKwh - previous.measuredMonthlyKwh), period: monthLabel(previous.id) })}</Text> : null}
+      {previous?.measuredMonthlyCost !== undefined && period.measuredMonthlyCost !== undefined ?
+        <Text style={textStyle}>{t('house.previousCost', { value: money(period.measuredMonthlyCost - previous.measuredMonthlyCost), period: monthLabel(previous.id) })}</Text> : null}
+      <Text style={textStyle}>{t('house.actionsCount', { count: period.actions.length })}</Text>
+      {period.actions.map((id) => { const index = ACTIONS.indexOf(id as typeof ACTIONS[number]); return index >= 0 ? <Text key={id} style={textStyle}>{t(ACTION_KEYS[index])}</Text> : null; })}
+    </Card> : null}
+    <SectionLabel>{t('plan.periods')}</SectionLabel>
+    <Text style={textStyle}>{t('house.periodsHint')}</Text>
+    {sorted.map((p) => <Card key={p.id + p.currency}>
+      <Text style={{ ...textStyle, fontWeight: '800' }}>{monthLabel(p.id)} · {p.currency}</Text>
+      {p.measuredMonthlyKwh !== undefined ? <Text style={textStyle}>{num(p.measuredMonthlyKwh)} kWh</Text> : null}
+      {p.measuredMonthlyCost !== undefined ? <Text style={textStyle}>{money(p.measuredMonthlyCost, p.currency)}</Text> : null}
+      <Button label={t('house.edit')} variant="outline" onPress={() => { setMonth(p.id); setUnit(p.currency); }} />
+      <Button label={t('house.remove')} variant="ghost" disabled={storageError} onPress={() => removePeriod(p)} />
+    </Card>)}
+  </Page>;
 }
-
-const styles = StyleSheet.create({
-  summary: { padding: 20 },
-  summaryLabel: { fontSize: 15, fontWeight: '800' },
-  summaryValue: { fontSize: 28, lineHeight: 36, fontWeight: '900', marginTop: 4 },
-  summaryText: { fontSize: 14, lineHeight: 20, marginTop: 5 },
-  form: { padding: 17 },
-  formHint: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
-  comparison: { padding: 17 },
-  cardTitle: { fontSize: 16, fontWeight: '800' },
-  cardText: { fontSize: 14, lineHeight: 20, marginTop: 3 },
-  roomCard: { flexDirection: 'row', alignItems: 'center', padding: 15, gap: 12 },
-  periodCard: { padding: 15 },
-  roomIcon: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  roomCopy: { flex: 1 },
-  roomName: { fontSize: 16, fontWeight: '800' },
-  actions: { padding: 8 },
-  actionRow: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 8 },
-  actionText: { flex: 1, fontSize: 15, fontWeight: '700' },
-});

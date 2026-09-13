@@ -1,39 +1,32 @@
-# App Review — Guideline 5.6 response
+# App Review — current notes for Guidelines 5.6 and 4.3
 
-Updated August 24, 2026.
+Updated September 13, 2026. Use only with a new build containing these changes.
 
-## Changes in the new build
+## Suggested review notes
 
-- Every rewarded feature is permanently visible in the main **Extras** tab.
-- The previous indirect `/unlock` route was removed.
-- The non-functional “PowerCost Plus — Coming soon” placeholder was removed.
-- Banner and native ad eligibility no longer depends on completing a first calculation.
-- Reviewer notes now list every ad format, rewarded feature, duration, prerequisite, and test path.
-- There is no reviewer-specific code, secret gesture, hidden account, remote feature flag, or remotely downloaded functionality.
+PowerCost has no login, reviewer-specific behavior, secret gestures, remote feature flags or server-controlled functionality. The same features are visible to every user.
 
-## Response to App Review
+The free household workflow is independent of simulation-history limits:
+1. Home > Calculate Now > choose an appliance and enter usage, quantity, room and rate > Calculate > Save/update household appliance.
+2. Home > House energy plan > open/edit an appliance, recalculate, then save/update it. This updates the existing household appliance instead of adding another one.
+3. In House energy plan, select actions, enter a bill month (YYYY-MM), currency, target, kWh and/or cost, then Save plan. Zero bill values are supported.
+4. Open another saved period to inspect its bill, estimate snapshot, recorded actions and differences from the previous period in the same currency. Monthly figures are estimates, not measurements or proof of savings caused by an action.
+5. Settings > Currency changes the default for new work, never converts existing amounts. Each bill and calculation retains its currency. Calculation history and household inventory are separate.
 
-> Hello App Review Team,
->
-> Thank you for bringing this concern to our attention. We take Guideline 5.6 seriously.
->
-> PowerCost does not contain reviewer-specific behavior, secret gestures, hidden accounts, remote feature flags, or server-controlled functionality intended to change the experience during review.
->
-> During our audit, we identified a discoverability issue: the complete rewarded-extras screen was included in the binary but was not permanently available in the main tab bar. Some entry points became visible only after completing calculations or reaching a local history limit. Advertising placements also became eligible only after the first calculation. Although this was intended as progressive disclosure, we understand how it could appear that functionality was hidden.
->
-> In this build, every rewarded feature is permanently visible under the Extras tab. We removed the indirect unlock route and all “coming soon” content. Advertising eligibility no longer depends on completing a first calculation, and the Notes for Review now document every ad format and rewarded feature.
->
-> The five optional rewarded features are:
-> 1. Remove ads for 30 minutes.
-> 2. Compare up to 10 appliances for 24 hours.
-> 3. Add 5 history slots for 24 hours.
-> 4. Unlock a personalized energy-saving plan for the current estimate.
-> 5. Unlock “What if?” scenarios for 30 minutes.
->
-> Core calculations and the household plan are always available without watching a rewarded ad. A temporary benefit is granted only after Google Mobile Ads reports the EARNED_REWARD event. Internet access and ad inventory are required.
->
-> Review path: open the Extras tab to see all rewarded features. From Home, open House energy plan to set a monthly target, compare a bill, group saved appliances by room, and select energy actions. For result-based features, go to Home > Calculate Now, select an appliance, enter usage and electricity rate, and tap Calculate.
->
-> We respectfully ask you to review this new build and let us know if any additional specific behavior requires clarification.
->
-> Thank you.
+All five optional rewards remain visible in Extras: remove ads for 30 minutes; compare up to 10 simulations for 24 hours; add 5 simulation-history slots for 24 hours; unlock an illustrative savings simulation for the current result; and unlock What-if scenarios for 30 minutes. Internet and ad inventory are needed to watch a new ad. A confirmed reward is recorded on EARNED_REWARD and remains usable offline until expiry.
+
+This version displays banners after consent, optional rewarded ads and preloaded interstitials at the Calculate another transition, subject to frequency limits. An unavailable interstitial is skipped; it does not appear later. Automatic App Open and native ads are not displayed. Report inappropriate ads through Settings > Report inappropriate ad, or the link below a banner. This opens a public GitHub report form with a privacy warning and requires user submission.
+
+Household data, history, settings and rewards are on-device. Settings > Delete all local data clears them. Privacy choices can be reopened in Settings when supported by UMP. Please identify any specific similarities that remain concerning under 4.3 so we can address the comparison precisely.
+
+## Publisher checks before submitting
+
+- Confirm the rejected build number and ask Apple for examples of similarities. Do not claim that source changes alone prove uniqueness.
+- Confirm ownership/provenance of code, assets and text, and disclose any related apps when answering Apple.
+- Replace screenshots with captures of this actual build; do not claim functions beyond those listed above.
+- Verify the AdMob UMP/ATT message configuration and App Store privacy declarations on the publisher accounts.
+- Test each enabled ad format on a real iPhone with test ads, consent granted/denied, offline transitions and process restart.
+- Confirm that the public GitHub support channel accepts reports and that the ad creative offers required targeting information/AdChoices. The app-level reporting link does not replace those SDK controls.
+- Confirm the actual EAS image uses Xcode 26 / iOS 26 SDK or later in build logs before submitting. Source configuration alone is not proof of the final binary.
+
+References: [Apple review guidelines](https://developer.apple.com/app-store/review/guidelines/), [Google App Open guidance](https://developers.google.com/admob/ios/app-open).

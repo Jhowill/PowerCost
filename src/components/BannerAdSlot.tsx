@@ -1,4 +1,6 @@
 import React from 'react';
+import { router } from 'expo-router';
+import { Button } from './ui';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useApp } from '../context/AppContext';
@@ -23,6 +25,7 @@ export function BannerAdSlot() {
         <AdErrorBoundary>
           <View style={styles.nativeWrap}>
             <ads.BannerAd unitId={getAdUnitId('banner', ads.TestIds.BANNER)} size={ads.BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
+            <Button label={t('ads.report')} variant="ghost" onPress={() => router.push('/report-ad' as never)} />
           </View>
         </AdErrorBoundary>
       );

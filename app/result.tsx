@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { router, useNavigation } from 'expo-router';
+import React, { useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BannerAdSlot } from '../src/components/BannerAdSlot';
@@ -12,15 +12,18 @@ import { createSavingsPlan, getRecommendedReduction, getSavingActionKey } from '
 
 export default function ResultScreen() {
   const {
-    colors, t, currentSimulation, settings, ads, whatIfActive, internetAvailable, saveCurrent, isCurrentSaved,
+    colors, t, currentSimulation, settings, ads, whatIfActive, saveHousehold, storageError, saveCurrent, isCurrentSaved,
     resetCalculation, maybeShowInterstitial,
   } = useApp();
+  const navigation = useNavigation();
+  const leaving = useRef(false);
+  const [busy, setBusy] = useState(false);
   const [reduction, setReduction] = useState(25);
 
   if (!currentSimulation) {
     return (
       <Page>
-        <Header title={t('result.title')} back onBack={() => router.back()} />
+        <Header title={t('result.title')} back onBack={() => { if (!leaving.current) router.back(); }} />
         <EmptyState title={t('result.noResult')} text={t('home.noCalculation')} action={t('home.calculateNow')} onAction={() => router.replace('/calculate')} />
       </Page>
     );
@@ -30,7 +33,7 @@ export default function ResultScreen() {
   const applianceName = input.applianceNameKey ? t(input.applianceNameKey) : input.applianceName;
   const impactKey = `result.${result.impactLevel}`;
   const impactColor = result.impactLevel === 'low' ? colors.success : result.impactLevel === 'medium' ? colors.warning : colors.danger;
-  const tipsActive = internetAvailable && ads.tipsUnlockedSimulationIds.includes(currentSimulation.id);
+  const tipsActive = ads.tipsUnlockedSimulationIds.includes(currentSimulation.id);
   const recommendedReduction = getRecommendedReduction(input.applianceId);
   const recommendedPlan = createSavingsPlan(input, result, recommendedReduction);
   const scenarioPlan = createSavingsPlan(input, result, reduction);
@@ -49,9 +52,16 @@ export default function ResultScreen() {
   };
 
   const calculateAnother = async () => {
-    await maybeShowInterstitial();
-    resetCalculation();
-    router.replace('/calculate');
+    if (leaving.current) return;
+    leaving.current = true;
+    setBusy(true);
+    try {
+      await maybeShowInterstitial();
+      if (navigation.isFocused()) {
+        resetCalculation();
+        router.replace('/calculate');
+      }
+    } finally { leaving.current = false; setBusy(false); }
   };
 
   return (
@@ -82,9 +92,10 @@ export default function ResultScreen() {
       <Metric label={t('result.yearlyCost')} value={formatCurrency(result.costPerYear, settings.locale, currentSimulation.currency)} />
       <Text style={[styles.warning, { color: colors.textMuted }]}>{t('result.approx')}</Text>
 
-      <Button label={isCurrentSaved ? t('result.saved') : t('result.save')} onPress={save} icon={isCurrentSaved ? 'checkmark-circle' : 'bookmark-outline'} disabled={isCurrentSaved} />
-      <Button label={t('result.compare')} onPress={() => router.push('/compare')} variant="outline" icon="bar-chart-outline" />
-      <Button label={t('result.calculateAnother')} onPress={calculateAnother} variant="ghost" icon="refresh-outline" />
+      <Button label={isCurrentSaved ? t('result.saved') : t('result.save')} onPress={save} icon={isCurrentSaved ? 'checkmark-circle' : 'bookmark-outline'} disabled={isCurrentSaved || busy || storageError} />
+      <Button disabled={busy} label={t('result.compare')} onPress={() => router.push('/compare')} variant="outline" icon="bar-chart-outline" />
+      <Button loading={busy} disabled={busy} label={t('result.calculateAnother')} onPress={calculateAnother} variant="ghost" icon="refresh-outline" />
+      <Button disabled={busy || storageError} label={t('house.save')} onPress={() => { saveHousehold(); Alert.alert(t('common.done')); }} icon="home-outline" variant="outline" />
       <BannerAdSlot />
 
       {tipsActive ? (

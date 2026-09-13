@@ -1,4 +1,5 @@
 import { SupportedLocale } from '../types';
+import { corrections } from './corrections';
 
 type Dictionary = Record<string, string>;
 
@@ -228,7 +229,7 @@ const fr: Dictionary = {
   'appliance.airConditioner': 'Climatiseur', 'appliance.shower': 'Douche électrique', 'appliance.refrigerator': 'Réfrigérateur', 'appliance.tv': 'Télévision', 'appliance.washingMachine': 'Lave-linge', 'appliance.fan': 'Ventilateur', 'appliance.computer': 'Ordinateur', 'appliance.lamp': 'Ampoule', 'appliance.other': 'Autre appareil', 'category.climate': 'Climatisation', 'category.bathroom': 'Salle de bain', 'category.kitchen': 'Cuisine', 'category.entertainment': 'Divertissement', 'category.laundry': 'Buanderie', 'category.office': 'Bureau', 'category.lighting': 'Éclairage', 'category.other': 'Autre',
 };
 
-export const dictionaries: Record<SupportedLocale, Dictionary> = { 'pt-BR': pt, 'en-US': en, 'es-ES': es, 'fr-FR': fr };
+export const dictionaries: Record<SupportedLocale, Dictionary> = { 'pt-BR': { ...pt, ...corrections['pt-BR'] }, 'en-US': { ...en, ...corrections['en-US'] }, 'es-ES': { ...es, ...corrections['es-ES'] }, 'fr-FR': { ...fr, ...corrections['fr-FR'] } };
 
 export const translate = (locale: SupportedLocale, key: string, params?: Record<string, string | number>) => {
   let value = dictionaries[locale][key] ?? pt[key] ?? key;

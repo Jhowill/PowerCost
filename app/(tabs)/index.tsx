@@ -9,7 +9,7 @@ import { useApp } from '../../src/context/AppContext';
 import { formatCurrency } from '../../src/utils/calculation';
 
 export default function HomeScreen() {
-  const { colors, t, history, currentSimulation, settings, resetCalculation, setCurrentSimulation } = useApp();
+  const { colors, t, plan, history, currentSimulation, settings, resetCalculation, setCurrentSimulation } = useApp();
   const last = history[0] ?? currentSimulation;
   const calculate = () => {
     resetCalculation();
@@ -46,6 +46,7 @@ export default function HomeScreen() {
           <View style={styles.planCopy}>
             <Text style={[styles.planTitle, { color: colors.text }]}>{t('home.planTitle')}</Text>
             <Text style={[styles.planText, { color: colors.textMuted }]}>{t('home.planText')}</Text>
+            <Text style={[styles.planText, { color: colors.primary }]}>{t('house.summary', { count: plan.appliances.length, periods: plan.periods.length })}</Text>
           </View>
           <Ionicons name="chevron-forward" size={21} color={colors.textMuted} />
         </Card>

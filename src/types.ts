@@ -19,6 +19,8 @@ export type Appliance = {
 };
 
 export type CalculationDraft = {
+  currency?: CurrencyCode;
+  householdId?: string;
   applianceId: string;
   applianceName: string;
   applianceNameKey?: string;
@@ -69,6 +71,11 @@ export type AdsState = {
 
 export type EnergyPlanPeriod = {
   id: string;
+  currency: CurrencyCode;
+  targetMonthlyCost?: number;
+  estimatedKwh?: number;
+  estimatedCost?: number;
+  actions: string[];
   label: string;
   measuredMonthlyKwh?: number;
   measuredMonthlyCost?: number;
@@ -76,7 +83,9 @@ export type EnergyPlanPeriod = {
 };
 
 export type EnergyPlan = {
-  schemaVersion: 3;
+  schemaVersion: 4;
+  appliances: SavedSimulation[];
+  targets: Partial<Record<CurrencyCode, number>>;
   currency: CurrencyCode;
   periods: EnergyPlanPeriod[];
   targetMonthlyCost?: number;

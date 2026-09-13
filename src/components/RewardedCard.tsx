@@ -16,9 +16,9 @@ export function RewardedCard({ title, description, duration, feature, icon = 'gi
   active?: boolean;
   disabled?: boolean;
 }) {
-  const { colors, t, unlockFeature, internetAvailable } = useApp();
+  const { colors, t, unlockFeature } = useApp();
   const [loading, setLoading] = useState(false);
-  const isActive = internetAvailable && (active || Boolean(activeUntil && new Date(activeUntil).getTime() > Date.now()));
+  const isActive = active || Boolean(activeUntil && new Date(activeUntil).getTime() > Date.now());
   const onWatch = async () => {
     setLoading(true);
     try {

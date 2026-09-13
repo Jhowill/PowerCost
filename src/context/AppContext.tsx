@@ -1,11 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
 import * as Network from 'expo-network';
-import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { AppState, useColorScheme } from 'react-native';
 
 import { translate } from '../i18n/translations';
-import { initializeAds, RewardedAdResult, showAdsPrivacyOptions, showAppOpenAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
+import { initializeAds, RewardedAdResult, showAdsPrivacyOptions, preloadInterstitialAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
 import { palettes } from '../theme';
 import {
   AdsState,
@@ -14,12 +14,12 @@ import {
   CalculationDraft,
   CurrencyCode,
   EnergyPlan,
-  EnergyPlanPeriod,
   RewardedFeature,
   SavedSimulation,
   SupportedLocale,
 } from '../types';
 import { APP_LIMITS, calculateEnergyCost, isActiveUntil } from '../utils/calculation';
+import { normalizeSettings, normalizeAds, normalizeHistory, normalizePlan, parseStored } from '../utils/persistence';
 
 const STORAGE = {
   settings: '@powercost/app_settings',
@@ -58,7 +58,9 @@ const DEFAULT_ADS: AdsState = {
 };
 
 const DEFAULT_PLAN: EnergyPlan = {
-  schemaVersion: 3,
+  schemaVersion: 4,
+  appliances: [],
+  targets: {},
   currency: DEFAULT_SETTINGS.currency,
   periods: [],
   actions: [],
@@ -78,6 +80,10 @@ type SaveResult = 'saved' | 'limit' | 'none';
 
 type AppContextValue = {
   hydrated: boolean;
+  storageError: boolean;
+  retryStorage: () => void;
+  draftRevision: number;
+  saveHousehold: () => void;
   settings: AppSettings;
   ads: AdsState;
   plan: EnergyPlan;
@@ -115,100 +121,20 @@ type AppContextValue = {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const safeParse = <T,>(raw: string | null, fallback: T): T => {
-  if (!raw) return fallback;
-  try {
-    const parsed = JSON.parse(raw) as T | null;
-    return parsed ?? fallback;
-  } catch {
-    return fallback;
-  }
-};
-
-const normalizeSettings = (raw: string | null): AppSettings => {
-  const value = safeParse<Partial<AppSettings>>(raw, {});
-  const locale = ['pt-BR', 'en-US', 'es-ES', 'fr-FR'].includes(value.locale ?? '') ? value.locale as SupportedLocale : DEFAULT_SETTINGS.locale;
-  const theme = ['system', 'light', 'dark'].includes(value.theme ?? '') ? value.theme as AppTheme : DEFAULT_SETTINGS.theme;
-  const currency = ['BRL', 'USD', 'EUR'].includes(value.currency ?? '') ? value.currency as CurrencyCode : CURRENCY_BY_LOCALE[locale];
-  return {
-    ...DEFAULT_SETTINGS,
-    ...value,
-    schemaVersion: 1,
-    locale,
-    theme,
-    currency,
-    defaultTariffPerKwh: typeof value.defaultTariffPerKwh === 'number' && value.defaultTariffPerKwh > 0 ? value.defaultTariffPerKwh : DEFAULT_SETTINGS.defaultTariffPerKwh,
-  };
-};
-
-const validIsoDate = (value: unknown) => typeof value === 'string' && !Number.isNaN(Date.parse(value)) ? value : undefined;
-
-const normalizeAds = (raw: string | null): AdsState => {
-  const value = safeParse<Partial<AdsState>>(raw, {});
-  if (value.schemaVersion !== 2) return DEFAULT_ADS;
-  return {
-    ...DEFAULT_ADS,
-    ...value,
-    schemaVersion: 2,
-    adFreeUntil: validIsoDate(value.adFreeUntil),
-    expandedComparisonUntil: validIsoDate(value.expandedComparisonUntil),
-    extraHistorySlotsUntil: validIsoDate(value.extraHistorySlotsUntil),
-    whatIfUnlockedUntil: validIsoDate(value.whatIfUnlockedUntil),
-    lastInterstitialShownAt: validIsoDate(value.lastInterstitialShownAt),
-    tipsUnlockedSimulationIds: Array.isArray(value.tipsUnlockedSimulationIds)
-      ? value.tipsUnlockedSimulationIds.filter((id): id is string => typeof id === 'string')
-      : [],
-    completedCalculationsSinceLastInterstitial: typeof value.completedCalculationsSinceLastInterstitial === 'number'
-      ? Math.max(0, value.completedCalculationsSinceLastInterstitial)
-      : 0,
-  };
-};
-
-const isSavedSimulation = (value: unknown): value is SavedSimulation => {
-  if (!value || typeof value !== 'object') return false;
-  const item = value as Partial<SavedSimulation>;
-  if (typeof item.id !== 'string' || typeof item.createdAt !== 'string' || Number.isNaN(Date.parse(item.createdAt))) return false;
-  if (!item.input || typeof item.input !== 'object' || !item.result || typeof item.result !== 'object') return false;
-  return typeof item.input.applianceName === 'string'
-    && Number.isFinite(item.input.powerWatts) && item.input.powerWatts > 0
-    && Number.isFinite(item.input.hoursPerDay) && item.input.hoursPerDay > 0 && item.input.hoursPerDay <= 24
-    && Number.isInteger(item.input.daysPerMonth) && item.input.daysPerMonth >= 1 && item.input.daysPerMonth <= 31
-    && (item.input.quantity === undefined || (Number.isInteger(item.input.quantity) && item.input.quantity >= 1 && item.input.quantity <= 99))
-    && Number.isFinite(item.input.tariffPerKwh) && item.input.tariffPerKwh > 0
-    && Number.isFinite(item.result.costPerMonth) && item.result.costPerMonth >= 0
-    && Number.isFinite(item.result.consumptionKwhMonth) && item.result.consumptionKwhMonth >= 0;
-};
-
-const normalizeHistory = (raw: string | null, fallbackCurrency: CurrencyCode): SavedSimulation[] => {
-  const value = safeParse<unknown>(raw, []);
-  if (!Array.isArray(value)) return [];
-  return value.filter(isSavedSimulation).map((item) => ({
-    ...item,
-    currency: ['BRL', 'USD', 'EUR'].includes(item.currency ?? '') ? item.currency as CurrencyCode : fallbackCurrency,
-    input: { ...item.input, quantity: Math.max(1, item.input.quantity ?? 1), room: typeof item.input.room === 'string' ? item.input.room.trim() || undefined : undefined },
-  }));
-};
-
-const normalizePlan = (raw: string | null, fallbackCurrency: CurrencyCode): EnergyPlan => {
-  const value = safeParse<Partial<EnergyPlan>>(raw, {});
-  return {
-    ...DEFAULT_PLAN,
-    ...value,
-    schemaVersion: 3,
-    currency: ['BRL', 'USD', 'EUR'].includes(value.currency ?? '') ? value.currency as CurrencyCode : fallbackCurrency,
-    periods: Array.isArray(value.periods) ? value.periods.filter((period): period is EnergyPlanPeriod => Boolean(period && typeof period === 'object' && typeof period.id === 'string' && typeof period.label === 'string' && typeof period.createdAt === 'string' && !Number.isNaN(Date.parse(period.createdAt)) && (period.measuredMonthlyKwh === undefined || (typeof period.measuredMonthlyKwh === 'number' && period.measuredMonthlyKwh > 0)) && (period.measuredMonthlyCost === undefined || (typeof period.measuredMonthlyCost === 'number' && period.measuredMonthlyCost > 0)))) .slice(0, 24) : [],
-    actions: Array.isArray(value.actions) ? value.actions.filter((item): item is string => typeof item === 'string') : [],
-    targetMonthlyCost: typeof value.targetMonthlyCost === 'number' && value.targetMonthlyCost > 0 ? value.targetMonthlyCost : undefined,
-    measuredMonthlyKwh: typeof value.measuredMonthlyKwh === 'number' && value.measuredMonthlyKwh > 0 ? value.measuredMonthlyKwh : undefined,
-    measuredMonthlyCost: typeof value.measuredMonthlyCost === 'number' && value.measuredMonthlyCost > 0 ? value.measuredMonthlyCost : undefined,
-    updatedAt: typeof value.updatedAt === 'string' && !Number.isNaN(Date.parse(value.updatedAt)) ? value.updatedAt : now(),
-  };
-};
-
 export function AppProvider({ children }: PropsWithChildren) {
   const systemTheme = useColorScheme();
   const networkState = Network.useNetworkState();
   const internetAvailable = networkState.isConnected === true && networkState.isInternetReachable === true;
+  const [storageError, setStorageError] = useState(false);
+  const [reload, setReload] = useState(0);
+  const writable = useRef(new Set<string>());
+  const writes = useRef(Promise.resolve());
+  const persist = useCallback((key: string, value: unknown) => {
+    if (!writable.current.has(key)) return;
+    const serialized = JSON.stringify(value);
+    writes.current = writes.current.then(() => AsyncStorage.setItem(key, serialized)).catch(() => { setStorageError(true); });
+  }, []);
+  const [draftRevision, setDraftRevision] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [clock, setClock] = useState(0);
   const [adsInitialized, setAdsInitialized] = useState(false);
@@ -219,29 +145,48 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [draft, setDraft] = useState<CalculationDraft>(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
   const [currentSimulation, setCurrentSimulation] = useState<SavedSimulation | null>(null);
 
+  const adsRef = useRef(ads);
+  adsRef.current = ads;
+  const dataGeneration = useRef(0);
   useEffect(() => {
-    void Promise.all([
-      AsyncStorage.getItem(STORAGE.settings),
-      AsyncStorage.getItem(STORAGE.history),
-      AsyncStorage.getItem(STORAGE.ads),
-      AsyncStorage.getItem(STORAGE.plan),
-    ]).then(([settingsRaw, historyRaw, adsRaw, planRaw]) => {
-      const loadedSettings = normalizeSettings(settingsRaw);
-      setSettings(loadedSettings);
-      setHistory(normalizeHistory(historyRaw, loadedSettings.currency));
-      setAds(normalizeAds(adsRaw));
-      setPlan(normalizePlan(planRaw, loadedSettings.currency));
-      setDraft(emptyDraft(loadedSettings.defaultTariffPerKwh ?? 0.9));
-    }).catch(() => {
-      setSettings(DEFAULT_SETTINGS);
-      setHistory([]);
-      setAds(DEFAULT_ADS);
-      setPlan({ ...DEFAULT_PLAN, currency: DEFAULT_SETTINGS.currency });
-      setDraft(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
-    }).finally(() => {
+    let active = true;
+    setHydrated(false);
+    void (async () => {
+      await writes.current;
+      const keys = Object.values(STORAGE);
+      const results = await Promise.allSettled(keys.map(async (key) => {
+        const parsed = parseStored(await AsyncStorage.getItem(key));
+        if (parsed !== null && (key === STORAGE.history ? !Array.isArray(parsed) : typeof parsed !== 'object' || Array.isArray(parsed))) throw new Error('Invalid storage shape');
+        if (key === STORAGE.plan && parsed && typeof (parsed as EnergyPlan).schemaVersion === 'number' && (parsed as EnergyPlan).schemaVersion > 4) throw new Error('Unsupported plan version');
+        return parsed;
+      }));
+      if (!active) return;
+      writable.current = new Set(keys.filter((_, index) => results[index].status === 'fulfilled'));
+      if (results[0].status === 'rejected') {
+        // Do not rewrite legacy amounts using a guessed currency.
+        writable.current.delete(STORAGE.history);
+        writable.current.delete(STORAGE.plan);
+      }
+      setStorageError(results.some((result) => result.status === 'rejected'));
+      const read = (index: number) => {
+        const result = results[index];
+        return result.status === 'fulfilled' ? result.value : undefined;
+      };
+      const loadedSettings = results[0].status === 'fulfilled' ? normalizeSettings(read(0), DEFAULT_SETTINGS) : DEFAULT_SETTINGS;
+      if (results[0].status === 'fulfilled') setSettings(loadedSettings);
+      if (results[1].status === 'fulfilled') setHistory(normalizeHistory(read(1), loadedSettings.currency));
+      if (results[2].status === 'fulfilled') {
+        const loadedAds = normalizeAds(read(2), DEFAULT_ADS);
+        adsRef.current = loadedAds;
+        setAds(loadedAds);
+      }
+      if (results[3].status === 'fulfilled') setPlan(normalizePlan(read(3), loadedSettings.currency));
+      setDraft({ ...emptyDraft(loadedSettings.defaultTariffPerKwh), currency: loadedSettings.currency });
+      setDraftRevision((v) => v + 1);
       setHydrated(true);
-    });
-  }, []);
+    })();
+    return () => { active = false; };
+  }, [reload]);
 
   useEffect(() => {
     let active = true;
@@ -258,37 +203,32 @@ export function AppProvider({ children }: PropsWithChildren) {
   }, [internetAvailable]);
 
   useEffect(() => {
-    if (!hydrated || !adsInitialized) return;
-    let wasBackgrounded = false;
-    const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'background') {
-        wasBackgrounded = true;
-        return;
-      }
-      if (nextState === 'active' && wasBackgrounded) {
-        wasBackgrounded = false;
-        if (internetAvailable && !isActiveUntil(ads.adFreeUntil)) void showAppOpenAd();
-      }
+    if (hydrated && adsInitialized && !isActiveUntil(ads.adFreeUntil)) preloadInterstitialAd();
+    // App Open is disabled: the app has no foreground loading phase.
+  }, [hydrated, adsInitialized, ads.adFreeUntil]);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') setClock((v) => v + 1);
     });
     return () => subscription.remove();
-  }, [ads.adFreeUntil, adsInitialized, hydrated, internetAvailable]);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setClock((value) => value + 1), 60_000);
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
-    if (hydrated) void AsyncStorage.setItem(STORAGE.settings, JSON.stringify(settings)).catch(() => undefined);
-  }, [hydrated, settings]);
+    if (hydrated) persist(STORAGE.settings, settings);
+  }, [hydrated, settings, persist]);
   useEffect(() => {
-    if (hydrated) void AsyncStorage.setItem(STORAGE.history, JSON.stringify(history)).catch(() => undefined);
-  }, [hydrated, history]);
+    if (hydrated) persist(STORAGE.history, history);
+  }, [hydrated, history, persist]);
   useEffect(() => {
-    if (hydrated) void AsyncStorage.setItem(STORAGE.ads, JSON.stringify(ads)).catch(() => undefined);
-  }, [ads, hydrated]);
+    if (hydrated) persist(STORAGE.ads, ads);
+  }, [ads, hydrated, persist]);
   useEffect(() => {
-    if (hydrated) void AsyncStorage.setItem(STORAGE.plan, JSON.stringify(plan)).catch(() => undefined);
-  }, [hydrated, plan]);
+    if (hydrated) persist(STORAGE.plan, plan);
+  }, [hydrated, plan, persist]);
 
   const resolvedTheme = settings.theme === 'system' ? (systemTheme === 'dark' ? 'dark' : 'light') : settings.theme;
   const colors = palettes[resolvedTheme];
@@ -296,13 +236,14 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   const resetCalculation = () => {
     setCurrentSimulation(null);
-    setDraft(emptyDraft(settings.defaultTariffPerKwh ?? 0.9));
+    setDraft({ ...emptyDraft(settings.defaultTariffPerKwh), currency: settings.currency });
+    setDraftRevision((v) => v + 1);
   };
 
   const completeCalculation = (input: CalculationDraft) => {
     const simulation: SavedSimulation = {
-      id: `sim_${Date.now()}`,
-      currency: settings.currency,
+      id: `sim_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
+      currency: input.currency ?? settings.currency,
       input: { ...input, quantity: Math.max(1, input.quantity ?? 1) },
       result: calculateEnergyCost(input),
       createdAt: now(),
@@ -317,59 +258,81 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   const recalculate = (simulation: SavedSimulation) => {
     setCurrentSimulation(null);
-    setDraft({ ...simulation.input });
+    setDraft({ ...simulation.input, currency: simulation.currency });
+    setDraftRevision((v) => v + 1);
   };
 
   const extraHistoryActive = isActiveUntil(ads.extraHistorySlotsUntil);
   const saveCurrent = (): SaveResult => {
-    if (!currentSimulation) return 'none';
+    if (!currentSimulation || storageError) return 'none';
     if (history.some((item) => item.id === currentSimulation.id)) return 'saved';
     const limit = extraHistoryActive ? APP_LIMITS.rewardedHistory : APP_LIMITS.freeHistory;
     if (history.length >= limit) return 'limit';
-    setHistory((items) => [currentSimulation, ...items]);
+    setHistory((items) => items.some((item) => item.id === currentSimulation.id) || items.length >= limit ? items : [currentSimulation, ...items]);
     return 'saved';
   };
 
   const deleteSimulation = (id: string) => setHistory((items) => items.filter((item) => item.id !== id));
   const clearHistory = () => setHistory([]);
   const clearAllLocalData = async () => {
+    dataGeneration.current += 1;
+    await writes.current;
     await AsyncStorage.multiRemove(Object.values(STORAGE));
+    writable.current = new Set(Object.values(STORAGE));
+    setStorageError(false);
+    adsRef.current = DEFAULT_ADS;
     setSettings(DEFAULT_SETTINGS);
     setAds(DEFAULT_ADS);
     setPlan(DEFAULT_PLAN);
     setHistory([]);
     setCurrentSimulation(null);
-    setDraft(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
+    setDraft({ ...emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh), currency: DEFAULT_SETTINGS.currency });
+    setDraftRevision((v) => v + 1);
   };
 
   const setLocale = (locale: SupportedLocale) => {
     setSettings((value) => ({ ...value, locale }));
   };
-  const setCurrency = (currency: CurrencyCode) => setSettings((value) => ({ ...value, currency }));
+  const setCurrency = (currency: CurrencyCode) => setSettings((value) => value.currency === currency ? value : ({ ...value, currency, defaultTariffPerKwh: undefined }));
   const setTheme = (theme: AppTheme) => setSettings((value) => ({ ...value, theme }));
   const setDefaultTariff = (defaultTariffPerKwh: number) => {
     setSettings((value) => ({ ...value, defaultTariffPerKwh }));
-    setDraft((value) => ({ ...value, tariffPerKwh: defaultTariffPerKwh }));
-  };
-  const updatePlan = (updates: Partial<EnergyPlan>) => setPlan((value) => ({ ...value, ...updates, currency: settings.currency, updatedAt: now() }));
 
+  };
+  const updatePlan = (updates: Partial<EnergyPlan>) => {
+    if (storageError) return;
+    setPlan((value) => ({ ...value, ...updates, updatedAt: now() }));
+  };
+
+  const saveHousehold = () => {
+    if (!currentSimulation || storageError) return;
+    const id = currentSimulation.input.householdId ?? currentSimulation.id;
+    const item = { ...currentSimulation, id, input: { ...currentSimulation.input, householdId: id } };
+    setPlan((value) => ({ ...value, appliances: [item, ...value.appliances.filter((existing) => existing.id !== id)], updatedAt: now() }));
+    setCurrentSimulation({ ...currentSimulation, input: item.input });
+  };
   const unlockFeature = async (feature: RewardedFeature) => {
     if (!internetAvailable) return 'offline';
-    if (feature === 'energy_tips' && !currentSimulation) return 'unavailable';
-    const result = await showRewardedAd();
-    if (result !== 'earned') return result;
-    const fromNow = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
-    setAds((value) => {
-      if (feature === 'ad_free') return { ...value, adFreeUntil: fromNow(30) };
-      if (feature === 'expanded_comparison') return { ...value, expandedComparisonUntil: fromNow(24 * 60) };
-      if (feature === 'extra_history_slots') return { ...value, extraHistorySlotsUntil: fromNow(24 * 60) };
-      if (feature === 'what_if') return { ...value, whatIfUnlockedUntil: fromNow(30) };
-      if (feature === 'energy_tips' && currentSimulation) {
-        return { ...value, tipsUnlockedSimulationIds: [...new Set([...value.tipsUnlockedSimulationIds, currentSimulation.id])] };
-      }
-      return value;
+    if (!writable.current.has(STORAGE.ads)) return 'unavailable';
+    const simulationId = currentSimulation?.id;
+    if (feature === 'energy_tips' && !simulationId) return 'unavailable';
+    const generation = dataGeneration.current;
+    let granted = false;
+    return showRewardedAd(() => {
+      if (granted || generation !== dataGeneration.current) return;
+      granted = true;
+      const fromNow = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
+      const value = adsRef.current;
+      let next = value;
+      if (feature === 'ad_free') next = { ...value, adFreeUntil: fromNow(30) };
+      if (feature === 'expanded_comparison') next = { ...value, expandedComparisonUntil: fromNow(24 * 60) };
+      if (feature === 'extra_history_slots') next = { ...value, extraHistorySlotsUntil: fromNow(24 * 60) };
+      if (feature === 'what_if') next = { ...value, whatIfUnlockedUntil: fromNow(30) };
+      if (feature === 'energy_tips' && simulationId) next = { ...value, tipsUnlockedSimulationIds: [...new Set([...value.tipsUnlockedSimulationIds, simulationId])] };
+      adsRef.current = next;
+      setAds(next);
+      persist(STORAGE.ads, next);
     });
-    return 'earned';
   };
 
   const adFreeActive = isActiveUntil(ads.adFreeUntil);
@@ -379,7 +342,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     return result.opened;
   };
   const maybeShowInterstitial = async () => {
-    if (adFreeActive || ads.completedCalculationsSinceLastInterstitial < 1) return;
+    if (!internetAvailable || adFreeActive || ads.completedCalculationsSinceLastInterstitial < 1) return;
     if (ads.lastInterstitialShownAt) {
       const minutes = (Date.now() - new Date(ads.lastInterstitialShownAt).getTime()) / 60_000;
       if (minutes < 2) return;
@@ -391,6 +354,10 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   const value = useMemo<AppContextValue>(() => ({
     hydrated,
+    storageError,
+    retryStorage: () => setReload((v) => v + 1),
+    draftRevision,
+    saveHousehold,
     settings,
     ads,
     plan,
@@ -426,7 +393,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     internetAvailable,
   // Functions are intentionally regenerated with the current localized state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [hydrated, adsInitialized, clock, settings, ads, plan, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive, internetAvailable]);
+  }), [storageError, draftRevision, hydrated, adsInitialized, clock, settings, ads, plan, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive, internetAvailable]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

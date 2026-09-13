@@ -9,17 +9,14 @@ import { useApp } from '../src/context/AppContext';
 import { APP_LIMITS, formatCurrency } from '../src/utils/calculation';
 
 export default function CompareScreen() {
-  const { colors, t, history, settings, ads, expandedComparisonActive, setCurrentSimulation, resetCalculation, maybeShowInterstitial } = useApp();
+  const { colors, t, history, settings, ads, expandedComparisonActive, setCurrentSimulation, resetCalculation } = useApp();
   const comparable = history.filter((item) => item.currency === settings.currency);
   const sorted = [...comparable].sort((a, b) => b.result.costPerMonth - a.result.costPerMonth);
   const limit = expandedComparisonActive ? APP_LIMITS.rewardedComparison : APP_LIMITS.freeComparison;
   const visible = sorted.slice(0, limit);
   const max = visible[0]?.result.costPerMonth || 1;
   const total = visible.reduce((sum, item) => sum + item.result.costPerMonth, 0);
-  const goBack = async () => {
-    await maybeShowInterstitial();
-    router.back();
-  };
+  const goBack = () => router.back();
   const add = () => { resetCalculation(); router.push('/calculate'); };
   const open = (index: number) => { setCurrentSimulation(visible[index]); router.push('/result'); };
 

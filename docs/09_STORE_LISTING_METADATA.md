@@ -46,6 +46,8 @@ PRINCIPAIS RECURSOS
 • Temas claro e escuro
 • Português, inglês, espanhol e francês
 
+Cadastro gratuito de aparelhos por cômodo, independente do histórico; faturas mensais com moeda própria; comparações entre períodos e ações registradas. Benefícios confirmados continuam disponíveis offline até expirar.
+
 PRIVACIDADE E CONTROLE
 
 O PowerCost não exige conta. Cálculos, preferências e histórico ficam armazenados localmente e podem ser apagados nos Ajustes. O app contém anúncios. Alguns extras temporários são liberados somente quando você escolhe assistir e conclui um anúncio premiado com internet disponível. As funções básicas de cálculo permanecem acessíveis sem assistir anúncios premiados.
@@ -93,6 +95,8 @@ KEY FEATURES
 • Practical plans and tips based on your inputs
 • Light and dark themes
 • Portuguese, English, Spanish, and French
+
+Free household appliance inventory by room, independent of history; monthly bills with their own currencies; period comparisons and recorded actions. Confirmed benefits remain available offline until expiry.
 
 PRIVACY AND CONTROL
 
@@ -142,6 +146,8 @@ FUNCIONES PRINCIPALES
 • Temas claro y oscuro
 • Portugués, inglés, español y francés
 
+Inventario gratuito por habitación, independiente del historial; facturas mensuales con moneda propia; comparaciones entre períodos y acciones registradas. Los beneficios confirmados funcionan sin conexión hasta caducar.
+
 PRIVACIDAD Y CONTROL
 
 PowerCost no requiere cuenta. Los cálculos, preferencias y el historial se guardan localmente y pueden borrarse en Ajustes. La aplicación contiene anuncios. Algunos extras temporales solo se desbloquean si decides ver y completar un anuncio premiado con conexión a internet. Las funciones básicas siguen disponibles sin anuncios premiados.
@@ -190,6 +196,8 @@ FONCTIONS PRINCIPALES
 • Thèmes clair et sombre
 • Portugais, anglais, espagnol et français
 
+Inventaire gratuit par pièce, indépendant de l’historique ; factures mensuelles avec leur devise ; comparaisons entre périodes et actions enregistrées. Les avantages confirmés restent disponibles hors ligne jusqu’à expiration.
+
 CONFIDENTIALITÉ ET CONTRÔLE
 
 PowerCost ne nécessite aucun compte. Les calculs, préférences et l’historique sont conservés localement et peuvent être supprimés dans les Réglages. L’app contient des publicités. Certains avantages temporaires sont débloqués uniquement si vous choisissez de regarder et de terminer une publicité récompensée avec une connexion Internet. Les calculs de base restent accessibles sans publicité récompensée.
@@ -214,7 +222,20 @@ PowerCost fournit des estimations informatives, pas des mesures électriques en 
 
 Use preferencialmente estas notas em inglês:
 
-> PowerCost has no account, reviewer-specific behavior, secret gestures, remote feature flags, or server-controlled functionality. Every rewarded feature is permanently visible under the Extras tab. The five optional rewards are: remove ads for 30 minutes; compare up to 10 appliances for 24 hours; add 5 history slots for 24 hours; unlock a personalized plan for the current estimate; and unlock “What if?” scenarios for 30 minutes. A reward is granted only after Google Mobile Ads confirms EARNED_REWARD. Internet and ad inventory are required. Core calculations never require an ad. To review result-based extras: Home > Calculate Now > select an appliance > enter usage and rate > Calculate. Banner and native ads are eligible after consent; interstitial ads may appear after completing a calculation; app-open ads may appear when returning to the foreground, subject to frequency limits. UMP/ATT choices may vary by region. All calculation and household-plan data is local and can be deleted under Settings > Delete all local data.
+> PowerCost has no login, reviewer-specific behavior, secret gestures, remote feature flags or server-controlled functionality. The same features are visible to every user.
+>
+> The free household workflow is independent of simulation-history limits:
+> 1. Home > Calculate Now > choose an appliance and enter usage, quantity, room and rate > Calculate > Save/update household appliance.
+> 2. Home > House energy plan > open/edit an appliance, recalculate, then save/update it. This updates the existing household appliance instead of adding another one.
+> 3. In House energy plan, select actions, enter a bill month (YYYY-MM), currency, target, kWh and/or cost, then Save plan. Zero bill values are supported.
+> 4. Open another saved period to inspect its bill, estimate snapshot, recorded actions and differences from the previous period in the same currency. Monthly figures are estimates, not measurements or proof of savings caused by an action.
+> 5. Settings > Currency changes the default for new work, never converts existing amounts. Each bill and calculation retains its currency. Calculation history and household inventory are separate.
+>
+> All five optional rewards remain visible in Extras: remove ads for 30 minutes; compare up to 10 simulations for 24 hours; add 5 simulation-history slots for 24 hours; unlock an illustrative savings simulation for the current result; and unlock What-if scenarios for 30 minutes. Internet and ad inventory are needed to watch a new ad. A confirmed reward is recorded on EARNED_REWARD and remains usable offline until expiry.
+>
+> This version displays banners after consent, optional rewarded ads and preloaded interstitials at the Calculate another transition, subject to frequency limits. An unavailable interstitial is skipped; it does not appear later. Automatic App Open and native ads are not displayed. Report inappropriate ads through Settings > Report inappropriate ad, or the link below a banner. This opens a public GitHub report form with a privacy warning and requires user submission.
+>
+> Household data, history, settings and rewards are on-device. Settings > Delete all local data clears them. Privacy choices can be reopened in Settings when supported by UMP. Please identify any specific similarities that remain concerning under 4.3 so we can address the comparison precisely.
 
 ## Declarações recomendadas
 

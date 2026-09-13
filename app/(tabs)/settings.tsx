@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Linking, StyleSheet, Text } from 'react-native';
 
 import { BannerAdSlot } from '../../src/components/BannerAdSlot';
@@ -21,9 +21,11 @@ export default function SettingsScreen() {
   const [themeOpen, setThemeOpen] = useState(false);
   const [tariffText, setTariffText] = useState(String(settings.defaultTariffPerKwh ?? 0.9).replace('.', ','));
 
+  useEffect(() => { setTariffText(settings.defaultTariffPerKwh ? String(settings.defaultTariffPerKwh).replace('.', ',') : ''); }, [settings.currency, settings.defaultTariffPerKwh]);
+
   const saveTariff = () => {
     const tariff = parseDecimal(tariffText);
-    if (!Number.isFinite(tariff) || tariff <= 0) {
+    if (!Number.isFinite(tariff) || tariff <= 0 || tariff > 1e6) {
       Alert.alert(t('error.tariff'));
       return;
     }
@@ -70,6 +72,7 @@ export default function SettingsScreen() {
         variant="ghost"
         icon="shield-checkmark-outline"
       />
+      <Button label={t('ads.report')} onPress={() => router.push('/report-ad' as never)} variant="outline" icon="flag-outline" />
       <BannerAdSlot />
 
       <SectionLabel>{t('settings.other')}</SectionLabel>

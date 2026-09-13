@@ -7,9 +7,15 @@ import { Button, Card, Choice, Field, Header, Page, SectionLabel } from '../../s
 import { useApp } from '../../src/context/AppContext';
 import { APPLIANCES } from '../../src/data/appliances';
 import { Appliance } from '../../src/types';
-import { formatCurrencySymbol, parseDecimal } from '../../src/utils/calculation';
+import { calculateEnergyCost, formatCurrencySymbol, parseDecimal } from '../../src/utils/calculation';
+import { amount } from '../../src/utils/persistence';
 
 export default function CalculateScreen() {
+  const { draftRevision } = useApp();
+  return <CalculateForm key={draftRevision} />;
+}
+
+function CalculateForm() {
   const { colors, t, draft, setDraft, completeCalculation, settings, setDefaultTariff } = useApp();
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState('');
@@ -70,9 +76,14 @@ export default function CalculateScreen() {
     if (!Number.isFinite(tariff) || tariff <= 0) return setError(t('error.tariff'));
     const quantity = parseDecimal(quantityText);
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) return setError(t('error.quantity'));
+    const power = parseDecimal(powerText);
+    if (!Number.isFinite(power) || power <= 0 || power > 1e7) return setError(t('error.power'));
+    if (tariff > 1e6) return setError(t('error.tariff'));
     const input = { ...draft, powerWatts: parseDecimal(powerText), hoursPerDay: hours, daysPerMonth: days, tariffPerKwh: tariff, quantity, room: roomText.trim() || undefined };
+    const result = calculateEnergyCost(input);
+    if (![result.costPerMonth, result.costPerYear, result.consumptionKwhYear].every(amount)) return setError(t('error.power'));
     setDraft(input);
-    if (saveTariff) setDefaultTariff(tariff);
+    if (saveTariff && (draft.currency ?? settings.currency) === settings.currency) setDefaultTariff(tariff);
     completeCalculation(input);
     router.push('/result');
   };
@@ -152,8 +163,8 @@ export default function CalculateScreen() {
 
           <Field label={t('calculate.quantityLabel')} value={quantityText} onChangeText={setQuantityText} keyboardType="number-pad" unit="×" />
           <Field label={t('calculate.roomLabel')} value={roomText} onChangeText={setRoomText} placeholder={t('calculate.roomPlaceholder')} />
-          <Field label={t('calculate.tariffQuestion')} value={tariffText} onChangeText={setTariffText} keyboardType="decimal-pad" unit={`${formatCurrencySymbol(settings.currency)}/kWh`} />
-          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: saveTariff }} onPress={() => setSaveTariff((value) => !value)} style={styles.checkboxRow}>
+          <Field label={t('calculate.tariffQuestion')} value={tariffText} onChangeText={setTariffText} keyboardType="decimal-pad" unit={`${formatCurrencySymbol(draft.currency ?? settings.currency)}/kWh`} />
+          <Pressable disabled={(draft.currency ?? settings.currency) !== settings.currency} accessibilityRole="checkbox" accessibilityState={{ checked: saveTariff, disabled: (draft.currency ?? settings.currency) !== settings.currency }} onPress={() => setSaveTariff((value) => !value)} style={styles.checkboxRow}>
             <Ionicons name={saveTariff ? 'checkbox' : 'square-outline'} size={27} color={colors.primary} />
             <Text style={[styles.checkboxText, { color: colors.text }]}>{t('calculate.saveTariff')}</Text>
           </Pressable>
