@@ -158,12 +158,13 @@ const isSavedSimulation = (value: unknown): value is SavedSimulation => {
   if (typeof item.id !== 'string' || typeof item.createdAt !== 'string' || Number.isNaN(Date.parse(item.createdAt))) return false;
   if (!item.input || typeof item.input !== 'object' || !item.result || typeof item.result !== 'object') return false;
   return typeof item.input.applianceName === 'string'
-    && typeof item.input.powerWatts === 'number'
-    && typeof item.input.hoursPerDay === 'number'
-    && typeof item.input.daysPerMonth === 'number'
-    && typeof item.input.tariffPerKwh === 'number'
-    && typeof item.result.costPerMonth === 'number'
-    && typeof item.result.consumptionKwhMonth === 'number';
+    && Number.isFinite(item.input.powerWatts) && item.input.powerWatts > 0
+    && Number.isFinite(item.input.hoursPerDay) && item.input.hoursPerDay > 0 && item.input.hoursPerDay <= 24
+    && Number.isInteger(item.input.daysPerMonth) && item.input.daysPerMonth >= 1 && item.input.daysPerMonth <= 31
+    && (item.input.quantity === undefined || (Number.isInteger(item.input.quantity) && item.input.quantity >= 1 && item.input.quantity <= 99))
+    && Number.isFinite(item.input.tariffPerKwh) && item.input.tariffPerKwh > 0
+    && Number.isFinite(item.result.costPerMonth) && item.result.costPerMonth >= 0
+    && Number.isFinite(item.result.consumptionKwhMonth) && item.result.consumptionKwhMonth >= 0;
 };
 
 const normalizeHistory = (raw: string | null, fallbackCurrency: CurrencyCode): SavedSimulation[] => {
