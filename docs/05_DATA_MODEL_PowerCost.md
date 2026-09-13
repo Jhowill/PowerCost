@@ -2070,3 +2070,8 @@ kWh × tarifa = custo
 ```
 
 Todo o restante — anúncios, recompensas, comparação, histórico e premium futuro — deve ficar separado em tipos, serviços e hooks próprios.
+
+
+## Household plan additions
+
+Saved calculations retain their currency, quantity, and optional room. The local EnergyPlan record stores a monthly target, reported bill values, and the user’s selected energy actions. No account or server is required.
