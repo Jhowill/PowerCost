@@ -41,6 +41,17 @@ export default function HomeScreen() {
         <QuickCard icon="bar-chart-outline" title={t('home.compare')} subtitle={t('home.compareHint')} onPress={() => router.push('/compare')} />
       </View>
 
+      <Pressable accessibilityRole="button" onPress={() => router.push('/plan')}>
+        <Card style={styles.planCard}>
+          <View style={[styles.planIcon, { backgroundColor: colors.primarySoft }]}><Ionicons name="home-outline" size={24} color={colors.primary} /></View>
+          <View style={styles.planCopy}>
+            <Text style={[styles.planTitle, { color: colors.text }]}>{t('home.planTitle')}</Text>
+            <Text style={[styles.planText, { color: colors.textMuted }]}>{t('home.planText')}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={21} color={colors.textMuted} />
+        </Card>
+      </Pressable>
+
       {last ? (
         <Pressable accessibilityRole="button" onPress={openLast}>
           <Card style={styles.lastCard}>
@@ -92,6 +103,11 @@ const styles = StyleSheet.create({
   lastCopy: { flex: 1 },
   lastName: { fontSize: 16, marginTop: 3 },
   lastCost: { fontSize: 18, fontWeight: '800' },
+  planCard: { flexDirection: 'row', alignItems: 'center', padding: 15, gap: 12 },
+  planIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  planCopy: { flex: 1 },
+  planTitle: { fontSize: 16, fontWeight: '800' },
+  planText: { fontSize: 13, lineHeight: 18, marginTop: 2 },
   tipCard: { flexDirection: 'row', alignItems: 'center', padding: 18, gap: 12 },
   tipCopy: { flex: 1 },
   tipTitle: { fontSize: 16, fontWeight: '800' },
