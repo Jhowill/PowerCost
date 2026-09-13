@@ -62,13 +62,13 @@ export default function ResultScreen() {
         <View style={styles.deviceCopy}>
           <Text style={[styles.deviceName, { color: colors.text }]}>{applianceName}</Text>
           <Text style={[styles.deviceDetails, { color: colors.textMuted }]}>{t('result.details', { watts: formatNumber(input.powerWatts, settings.locale, 0), hours: formatNumber(input.hoursPerDay, settings.locale, input.hoursPerDay % 1 ? 1 : 0), days: input.daysPerMonth })}</Text>
-          <Text style={[styles.deviceDetails, { color: colors.textMuted }]}>{t('result.tariff', { value: formatCurrency(input.tariffPerKwh, settings.locale, settings.currency) })}</Text>
+          <Text style={[styles.deviceDetails, { color: colors.textMuted }]}>{t('result.tariff', { value: formatCurrency(input.tariffPerKwh, settings.locale, currentSimulation.currency) })}</Text>
         </View>
       </Card>
 
       <Card tone="primary" style={styles.resultCard}>
         <Text style={[styles.resultLabel, { color: colors.text }]}>{t('result.monthlyEstimated')}</Text>
-        <Text adjustsFontSizeToFit numberOfLines={1} style={[styles.resultValue, { color: colors.primary }]}>{formatCurrency(result.costPerMonth, settings.locale, settings.currency)}</Text>
+        <Text adjustsFontSizeToFit numberOfLines={1} style={[styles.resultValue, { color: colors.primary }]}>{formatCurrency(result.costPerMonth, settings.locale, currentSimulation.currency)}</Text>
         <Text style={[styles.perMonth, { color: colors.textMuted }]}>{t('result.perMonth')}</Text>
         <View style={[styles.badge, { backgroundColor: colors.surface, borderColor: impactColor }]}>
           <Text style={[styles.badgeText, { color: impactColor }]}>{t(impactKey)}</Text>
@@ -76,8 +76,8 @@ export default function ResultScreen() {
       </Card>
 
       <Metric label={t('result.monthlyConsumption')} value={`${formatNumber(result.consumptionKwhMonth, settings.locale)} kWh`} />
-      <Metric label={t('result.dailyCost')} value={formatCurrency(result.costPerDay, settings.locale, settings.currency)} />
-      <Metric label={t('result.yearlyCost')} value={formatCurrency(result.costPerYear, settings.locale, settings.currency)} />
+      <Metric label={t('result.dailyCost')} value={formatCurrency(result.costPerDay, settings.locale, currentSimulation.currency)} />
+      <Metric label={t('result.yearlyCost')} value={formatCurrency(result.costPerYear, settings.locale, currentSimulation.currency)} />
       <Text style={[styles.warning, { color: colors.textMuted }]}>{t('result.approx')}</Text>
 
       <Button label={isCurrentSaved ? t('result.saved') : t('result.save')} onPress={save} icon={isCurrentSaved ? 'checkmark-circle' : 'bookmark-outline'} disabled={isCurrentSaved} />
@@ -104,8 +104,8 @@ export default function ResultScreen() {
             </View>
           </View>
           <View style={styles.insightGrid}>
-            <InsightMetric label={t('result.monthlySaving')} value={formatCurrency(recommendedPlan.monthlySavings, settings.locale, settings.currency)} />
-            <InsightMetric label={t('result.yearlySaving')} value={formatCurrency(recommendedPlan.yearlySavings, settings.locale, settings.currency)} />
+            <InsightMetric label={t('result.monthlySaving')} value={formatCurrency(recommendedPlan.monthlySavings, settings.locale, currentSimulation.currency)} />
+            <InsightMetric label={t('result.yearlySaving')} value={formatCurrency(recommendedPlan.yearlySavings, settings.locale, currentSimulation.currency)} />
             <InsightMetric label={t('result.energyAvoided')} value={`${formatNumber(recommendedPlan.yearlyKwhSavings, settings.locale, 1)} kWh`} />
           </View>
           <Text style={[styles.disclaimer, { color: colors.textMuted }]}>{t('result.planDisclaimer')}</Text>
@@ -132,13 +132,13 @@ export default function ResultScreen() {
           </View>
           <View style={[styles.scenarioResult, { backgroundColor: colors.primarySoft }]}>
             <Text style={[styles.scenarioLabel, { color: colors.textMuted }]}>{t('result.newMonthlyCost')}</Text>
-            <Text style={[styles.scenarioValue, { color: colors.primary }]}>{formatCurrency(scenarioPlan.newMonthlyCost, settings.locale, settings.currency)}</Text>
-            <Text style={[styles.scenarioSaving, { color: colors.text }]}>{t('result.youSave', { value: formatCurrency(scenarioPlan.monthlySavings, settings.locale, settings.currency) })}</Text>
+            <Text style={[styles.scenarioValue, { color: colors.primary }]}>{formatCurrency(scenarioPlan.newMonthlyCost, settings.locale, currentSimulation.currency)}</Text>
+            <Text style={[styles.scenarioSaving, { color: colors.text }]}>{t('result.youSave', { value: formatCurrency(scenarioPlan.monthlySavings, settings.locale, currentSimulation.currency) })}</Text>
           </View>
           <View style={styles.insightGrid}>
             <InsightMetric label={t('result.targetUse')} value={`${formatNumber(scenarioPlan.targetHoursPerDay, settings.locale, 1)} h/${t('result.day')}`} />
             <InsightMetric label={t('result.newConsumption')} value={`${formatNumber(scenarioPlan.newMonthlyConsumption, settings.locale, 1)} kWh`} />
-            <InsightMetric label={t('result.savingInYear')} value={formatCurrency(scenarioPlan.yearlySavings, settings.locale, settings.currency)} />
+            <InsightMetric label={t('result.savingInYear')} value={formatCurrency(scenarioPlan.yearlySavings, settings.locale, currentSimulation.currency)} />
           </View>
         </Card>
       ) : (
