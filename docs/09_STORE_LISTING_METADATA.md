@@ -89,7 +89,7 @@ KEY FEATURES
 • Calculation history stored on your device
 • Appliance comparisons to identify the highest costs
 • Usage-reduction scenarios and projected savings
-• Household planning by room, monthly goals, and bill comparison
+• Household planning by room, monthly goals, bill comparison, and monthly progress
 • Practical plans and tips based on your inputs
 • Light and dark themes
 • Portuguese, English, Spanish, and French
