@@ -44,10 +44,18 @@ export default function PlanScreen() {
     const targetValue = parseDecimal(targetText);
     const kwhValue = parseDecimal(measuredKwhText);
     const costValue = parseDecimal(measuredCostText);
+    const measuredKwh = Number.isFinite(kwhValue) && kwhValue > 0 ? kwhValue : undefined;
+    const measuredCost = Number.isFinite(costValue) && costValue > 0 ? costValue : undefined;
+    const periodId = new Date().toISOString().slice(0, 7);
+    const periodLabel = new Intl.DateTimeFormat(settings.locale, { month: 'short', year: 'numeric' }).format(new Date());
+    const nextPeriods = measuredKwh || measuredCost
+      ? [{ id: periodId, label: periodLabel, measuredMonthlyKwh: measuredKwh, measuredMonthlyCost: measuredCost, createdAt: new Date().toISOString() }, ...plan.periods.filter((period) => period.id !== periodId)].slice(0, 24)
+      : plan.periods;
     updatePlan({
       targetMonthlyCost: Number.isFinite(targetValue) && targetValue > 0 ? targetValue : undefined,
-      measuredMonthlyKwh: Number.isFinite(kwhValue) && kwhValue > 0 ? kwhValue : undefined,
-      measuredMonthlyCost: Number.isFinite(costValue) && costValue > 0 ? costValue : undefined,
+      measuredMonthlyKwh: measuredKwh,
+      measuredMonthlyCost: measuredCost,
+      periods: nextPeriods,
     });
   };
   const toggleAction = (id: string) => updatePlan({ actions: plan.actions.includes(id) ? plan.actions.filter((item) => item !== id) : [...plan.actions, id] });
@@ -80,6 +88,19 @@ export default function PlanScreen() {
           {plan.measuredMonthlyCost ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.measuredCostValue', { value: formatCurrency(plan.measuredMonthlyCost, settings.locale, settings.currency) })}</Text> : null}
           <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.unexplained', { value: formatCurrency(Math.abs((plan.measuredMonthlyCost ?? total) - total), settings.locale, settings.currency) })}</Text>
         </Card>
+      ) : null}
+
+      {planMatchesCurrency && plan.periods.length ? (
+        <>
+          <SectionLabel>{t('plan.periods')}</SectionLabel>
+          {plan.periods.slice(0, 6).map((period) => (
+            <Card key={period.id} style={styles.periodCard}>
+              <Text style={[styles.roomName, { color: colors.text }]}>{period.label}</Text>
+              {period.measuredMonthlyKwh ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{formatNumber(period.measuredMonthlyKwh, settings.locale, 1)} kWh</Text> : null}
+              {period.measuredMonthlyCost ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{formatCurrency(period.measuredMonthlyCost, settings.locale, settings.currency)}</Text> : null}
+            </Card>
+          ))}
+        </>
       ) : null}
 
       <SectionLabel>{t('plan.rooms')}</SectionLabel>
@@ -116,6 +137,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '800' },
   cardText: { fontSize: 14, lineHeight: 20, marginTop: 3 },
   roomCard: { flexDirection: 'row', alignItems: 'center', padding: 15, gap: 12 },
+  periodCard: { padding: 15 },
   roomIcon: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   roomCopy: { flex: 1 },
   roomName: { fontSize: 16, fontWeight: '800' },
