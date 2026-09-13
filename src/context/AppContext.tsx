@@ -13,6 +13,7 @@ import {
   AppTheme,
   CalculationDraft,
   CurrencyCode,
+  EnergyPlan,
   RewardedFeature,
   SavedSimulation,
   SupportedLocale,
@@ -23,6 +24,7 @@ const STORAGE = {
   settings: '@powercost/app_settings',
   history: '@powercost/history',
   ads: '@powercost/ads_state',
+  plan: '@powercost/energy_plan',
 } as const;
 
 const CURRENCY_BY_LOCALE: Record<SupportedLocale, CurrencyCode> = {
@@ -54,6 +56,12 @@ const DEFAULT_ADS: AdsState = {
   completedCalculationsSinceLastInterstitial: 0,
 };
 
+const DEFAULT_PLAN: EnergyPlan = {
+  schemaVersion: 1,
+  actions: [],
+  updatedAt: now(),
+};
+
 const emptyDraft = (tariff = 0.9): CalculationDraft => ({
   applianceId: '',
   applianceName: '',
@@ -69,6 +77,7 @@ type AppContextValue = {
   hydrated: boolean;
   settings: AppSettings;
   ads: AdsState;
+  plan: EnergyPlan;
   history: SavedSimulation[];
   draft: CalculationDraft;
   currentSimulation: SavedSimulation | null;
@@ -88,6 +97,7 @@ type AppContextValue = {
   setLocale: (locale: SupportedLocale) => void;
   setTheme: (theme: AppTheme) => void;
   setDefaultTariff: (value: number) => void;
+  updatePlan: (updates: Partial<EnergyPlan>) => void;
   unlockFeature: (feature: RewardedFeature) => Promise<RewardedAdResult>;
   openAdsPrivacyOptions: () => Promise<boolean>;
   maybeShowInterstitial: () => Promise<void>;
@@ -156,9 +166,28 @@ const isSavedSimulation = (value: unknown): value is SavedSimulation => {
     && typeof item.result.consumptionKwhMonth === 'number';
 };
 
-const normalizeHistory = (raw: string | null): SavedSimulation[] => {
+const normalizeHistory = (raw: string | null, fallbackCurrency: CurrencyCode): SavedSimulation[] => {
   const value = safeParse<unknown>(raw, []);
-  return Array.isArray(value) ? value.filter(isSavedSimulation) : [];
+  if (!Array.isArray(value)) return [];
+  return value.filter(isSavedSimulation).map((item) => ({
+    ...item,
+    currency: item.currency ?? fallbackCurrency,
+    input: { ...item.input, quantity: Math.max(1, item.input.quantity ?? 1) },
+  }));
+};
+
+const normalizePlan = (raw: string | null): EnergyPlan => {
+  const value = safeParse<Partial<EnergyPlan>>(raw, {});
+  return {
+    ...DEFAULT_PLAN,
+    ...value,
+    schemaVersion: 1,
+    actions: Array.isArray(value.actions) ? value.actions.filter((item): item is string => typeof item === 'string') : [],
+    targetMonthlyCost: typeof value.targetMonthlyCost === 'number' && value.targetMonthlyCost > 0 ? value.targetMonthlyCost : undefined,
+    measuredMonthlyKwh: typeof value.measuredMonthlyKwh === 'number' && value.measuredMonthlyKwh > 0 ? value.measuredMonthlyKwh : undefined,
+    measuredMonthlyCost: typeof value.measuredMonthlyCost === 'number' && value.measuredMonthlyCost > 0 ? value.measuredMonthlyCost : undefined,
+    updatedAt: typeof value.updatedAt === 'string' && !Number.isNaN(Date.parse(value.updatedAt)) ? value.updatedAt : now(),
+  };
 };
 
 export function AppProvider({ children }: PropsWithChildren) {
@@ -169,6 +198,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [adsInitialized, setAdsInitialized] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [ads, setAds] = useState<AdsState>(DEFAULT_ADS);
+  const [plan, setPlan] = useState<EnergyPlan>(DEFAULT_PLAN);
   const [history, setHistory] = useState<SavedSimulation[]>([]);
   const [draft, setDraft] = useState<CalculationDraft>(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
   const [currentSimulation, setCurrentSimulation] = useState<SavedSimulation | null>(null);
@@ -178,16 +208,19 @@ export function AppProvider({ children }: PropsWithChildren) {
       AsyncStorage.getItem(STORAGE.settings),
       AsyncStorage.getItem(STORAGE.history),
       AsyncStorage.getItem(STORAGE.ads),
-    ]).then(([settingsRaw, historyRaw, adsRaw]) => {
+      AsyncStorage.getItem(STORAGE.plan),
+    ]).then(([settingsRaw, historyRaw, adsRaw, planRaw]) => {
       const loadedSettings = normalizeSettings(settingsRaw);
       setSettings(loadedSettings);
-      setHistory(normalizeHistory(historyRaw));
+      setHistory(normalizeHistory(historyRaw, loadedSettings.currency));
       setAds(normalizeAds(adsRaw));
+      setPlan(normalizePlan(planRaw));
       setDraft(emptyDraft(loadedSettings.defaultTariffPerKwh ?? 0.9));
     }).catch(() => {
       setSettings(DEFAULT_SETTINGS);
       setHistory([]);
       setAds(DEFAULT_ADS);
+      setPlan(DEFAULT_PLAN);
       setDraft(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
     }).finally(() => {
       setHydrated(true);
@@ -228,6 +261,9 @@ export function AppProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (hydrated) void AsyncStorage.setItem(STORAGE.ads, JSON.stringify(ads)).catch(() => undefined);
   }, [ads, hydrated]);
+  useEffect(() => {
+    if (hydrated) void AsyncStorage.setItem(STORAGE.plan, JSON.stringify(plan)).catch(() => undefined);
+  }, [hydrated, plan]);
 
   const resolvedTheme = settings.theme === 'system' ? (systemTheme === 'dark' ? 'dark' : 'light') : settings.theme;
   const colors = palettes[resolvedTheme];
@@ -241,7 +277,8 @@ export function AppProvider({ children }: PropsWithChildren) {
   const completeCalculation = (input: CalculationDraft) => {
     const simulation: SavedSimulation = {
       id: `sim_${Date.now()}`,
-      input: { ...input },
+      currency: settings.currency,
+      input: { ...input, quantity: Math.max(1, input.quantity ?? 1) },
       result: calculateEnergyCost(input),
       createdAt: now(),
     };
@@ -274,6 +311,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     await AsyncStorage.multiRemove(Object.values(STORAGE));
     setSettings(DEFAULT_SETTINGS);
     setAds(DEFAULT_ADS);
+    setPlan(DEFAULT_PLAN);
     setHistory([]);
     setCurrentSimulation(null);
     setDraft(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
@@ -287,6 +325,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setSettings((value) => ({ ...value, defaultTariffPerKwh }));
     setDraft((value) => ({ ...value, tariffPerKwh: defaultTariffPerKwh }));
   };
+  const updatePlan = (updates: Partial<EnergyPlan>) => setPlan((value) => ({ ...value, ...updates, updatedAt: now() }));
 
   const unlockFeature = async (feature: RewardedFeature) => {
     if (!internetAvailable) return 'offline';
@@ -328,6 +367,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     hydrated,
     settings,
     ads,
+    plan,
     history,
     draft,
     currentSimulation,
@@ -347,6 +387,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setLocale,
     setTheme,
     setDefaultTariff,
+    updatePlan,
     unlockFeature,
     openAdsPrivacyOptions,
     maybeShowInterstitial,
@@ -358,7 +399,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     internetAvailable,
   // Functions are intentionally regenerated with the current localized state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [hydrated, adsInitialized, settings, ads, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive, internetAvailable]);
+  }), [hydrated, adsInitialized, settings, ads, plan, history, draft, currentSimulation, resolvedTheme, colors, adFreeActive, extraHistoryActive, internetAvailable]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
