@@ -68,7 +68,8 @@ export type AdsState = {
 
 
 export type EnergyPlan = {
-  schemaVersion: 1;
+  schemaVersion: 2;
+  currency: CurrencyCode;
   targetMonthlyCost?: number;
   measuredMonthlyKwh?: number;
   measuredMonthlyCost?: number;
