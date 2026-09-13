@@ -22,7 +22,7 @@ Esta Política de Privacidade explica como o aplicativo PowerCost, publicado por
 O aplicativo armazena no aparelho:
 
 - dados informados nos cálculos, como aparelho, potência, tempo de uso, dias e tarifa;
-- resultados, histórico e comparações;
+- resultados, histórico, comparações e dados opcionais do planejamento da casa, como cômodo, quantidade, meta mensal e valores de fatura;
 - idioma, tema e tarifa padrão;
 - estado de recursos temporários liberados por anúncios premiados;
 - controles internos de frequência de anúncios.
@@ -91,7 +91,7 @@ This Privacy Policy explains how PowerCost, published by Jhowill, handles inform
 
 ### 2. Information stored locally
 
-PowerCost stores calculation inputs and results, history, comparisons, language, theme, default electricity rate, temporary rewarded-ad benefits, and internal ad-frequency controls on the device. This information is used to provide requested features and restore preferences. PowerCost does not send it to its own server. Connectivity is checked to determine whether ads and online extras can work; PowerCost does not create a network-history profile from this check.
+PowerCost stores calculation inputs and results, history, comparisons, optional room and quantity metadata, household-plan targets and bill values, language, theme, default electricity rate, temporary rewarded-ad benefits, and internal ad-frequency controls on the device. This information is used to provide requested features and restore preferences. PowerCost does not send it to its own server. Connectivity is checked to determine whether ads and online extras can work; PowerCost does not create a network-history profile from this check.
 
 ### 3. Advertising and third-party data
 
@@ -137,7 +137,7 @@ Esta Política explica cómo PowerCost, publicado por Jhowill, trata informació
 
 ### 2. Datos locales
 
-La aplicación guarda en el dispositivo los datos y resultados de los cálculos, historial, comparaciones, idioma, tema, tarifa, beneficios temporales y controles de frecuencia publicitaria. Se usan para prestar las funciones y restaurar preferencias, y PowerCost no los envía a un servidor propio. La conectividad se comprueba para habilitar anuncios y extras online, sin crear un historial de red.
+La aplicación guarda en el dispositivo los datos y resultados de los cálculos, historial, comparaciones, datos opcionales de habitación y cantidad, objetivos y facturas del plan del hogar, idioma, tema, tarifa, beneficios temporales y controles de frecuencia publicitaria. Se usan para prestar las funciones y restaurar preferencias, y PowerCost no los envía a un servidor propio. La conectividad se comprueba para habilitar anuncios y extras online, sin crear un historial de red.
 
 ### 3. Publicidad y terceros
 
@@ -169,7 +169,7 @@ Cette Politique explique comment PowerCost, publié par Jhowill, traite les info
 
 ### 2. Données locales
 
-L’app conserve sur l’appareil les données et résultats des calculs, l’historique, les comparaisons, la langue, le thème, le tarif, les avantages temporaires et les contrôles de fréquence publicitaire. Ces éléments servent aux fonctions demandées et aux préférences; PowerCost ne les envoie pas à son propre serveur. La connexion est vérifiée pour les annonces et extras en ligne, sans création d’un historique réseau.
+L’app conserve sur l’appareil les données et résultats des calculs, l’historique, les comparaisons, les données facultatives de pièce et de quantité, les objectifs et factures du plan du foyer, la langue, le thème, le tarif, les avantages temporaires et les contrôles de fréquence publicitaire. Ces éléments servent aux fonctions demandées et aux préférences; PowerCost ne les envoie pas à son propre serveur. La connexion est vérifiée pour les annonces et extras en ligne, sans création d’un historique réseau.
 
 ### 3. Publicité et tiers
 
