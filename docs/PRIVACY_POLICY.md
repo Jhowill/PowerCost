@@ -22,7 +22,7 @@ Esta Política de Privacidade explica como o aplicativo PowerCost, publicado por
 O aplicativo armazena no aparelho:
 
 - dados informados nos cálculos, como aparelho, potência, tempo de uso, dias e tarifa;
-- resultados, histórico, comparações e dados opcionais do planejamento da casa, como cômodo, quantidade, meta mensal e valores de fatura;
+- resultados, histórico, comparações e dados opcionais do planejamento da casa, como cômodo, quantidade, meta mensal, valores de fatura e evolução por período;
 - idioma, tema e tarifa padrão;
 - estado de recursos temporários liberados por anúncios premiados;
 - controles internos de frequência de anúncios.
