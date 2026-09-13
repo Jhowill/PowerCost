@@ -336,7 +336,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   };
 
   const setLocale = (locale: SupportedLocale) => {
-    setSettings((value) => ({ ...value, locale, currency: CURRENCY_BY_LOCALE[locale] }));
+    setSettings((value) => ({ ...value, locale }));
   };
   const setTheme = (theme: AppTheme) => setSettings((value) => ({ ...value, theme }));
   const setDefaultTariff = (defaultTariffPerKwh: number) => {
