@@ -16,7 +16,10 @@ export default function CompareScreen() {
   const visible = sorted.slice(0, limit);
   const max = visible[0]?.result.costPerMonth || 1;
   const total = visible.reduce((sum, item) => sum + item.result.costPerMonth, 0);
-  const goBack = () => { void maybeShowInterstitial(); router.back(); };
+  const goBack = async () => {
+    await maybeShowInterstitial();
+    router.back();
+  };
   const add = () => { resetCalculation(); router.push('/calculate'); };
   const open = (index: number) => { setCurrentSimulation(visible[index]); router.push('/result'); };
 
