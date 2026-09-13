@@ -57,7 +57,8 @@ const DEFAULT_ADS: AdsState = {
 };
 
 const DEFAULT_PLAN: EnergyPlan = {
-  schemaVersion: 1,
+  schemaVersion: 2,
+  currency: DEFAULT_SETTINGS.currency,
   actions: [],
   updatedAt: now(),
 };
@@ -115,7 +116,8 @@ const AppContext = createContext<AppContextValue | null>(null);
 const safeParse = <T,>(raw: string | null, fallback: T): T => {
   if (!raw) return fallback;
   try {
-    return JSON.parse(raw) as T;
+    const parsed = JSON.parse(raw) as T | null;
+    return parsed ?? fallback;
   } catch {
     return fallback;
   }
@@ -170,6 +172,7 @@ const isSavedSimulation = (value: unknown): value is SavedSimulation => {
     && Number.isFinite(item.input.hoursPerDay) && item.input.hoursPerDay > 0 && item.input.hoursPerDay <= 24
     && Number.isInteger(item.input.daysPerMonth) && item.input.daysPerMonth >= 1 && item.input.daysPerMonth <= 31
     && (item.input.quantity === undefined || (Number.isInteger(item.input.quantity) && item.input.quantity >= 1 && item.input.quantity <= 99))
+    && (item.input.room === undefined || typeof item.input.room === 'string')
     && Number.isFinite(item.input.tariffPerKwh) && item.input.tariffPerKwh > 0
     && Number.isFinite(item.result.costPerMonth) && item.result.costPerMonth >= 0
     && Number.isFinite(item.result.consumptionKwhMonth) && item.result.consumptionKwhMonth >= 0;
@@ -185,12 +188,13 @@ const normalizeHistory = (raw: string | null, fallbackCurrency: CurrencyCode): S
   }));
 };
 
-const normalizePlan = (raw: string | null): EnergyPlan => {
+const normalizePlan = (raw: string | null, fallbackCurrency: CurrencyCode): EnergyPlan => {
   const value = safeParse<Partial<EnergyPlan>>(raw, {});
   return {
     ...DEFAULT_PLAN,
     ...value,
-    schemaVersion: 1,
+    schemaVersion: 2,
+    currency: ['BRL', 'USD', 'EUR'].includes(value.currency ?? '') ? value.currency as CurrencyCode : fallbackCurrency,
     actions: Array.isArray(value.actions) ? value.actions.filter((item): item is string => typeof item === 'string') : [],
     targetMonthlyCost: typeof value.targetMonthlyCost === 'number' && value.targetMonthlyCost > 0 ? value.targetMonthlyCost : undefined,
     measuredMonthlyKwh: typeof value.measuredMonthlyKwh === 'number' && value.measuredMonthlyKwh > 0 ? value.measuredMonthlyKwh : undefined,
@@ -224,13 +228,13 @@ export function AppProvider({ children }: PropsWithChildren) {
       setSettings(loadedSettings);
       setHistory(normalizeHistory(historyRaw, loadedSettings.currency));
       setAds(normalizeAds(adsRaw));
-      setPlan(normalizePlan(planRaw));
+      setPlan(normalizePlan(planRaw, loadedSettings.currency));
       setDraft(emptyDraft(loadedSettings.defaultTariffPerKwh ?? 0.9));
     }).catch(() => {
       setSettings(DEFAULT_SETTINGS);
       setHistory([]);
       setAds(DEFAULT_ADS);
-      setPlan(DEFAULT_PLAN);
+      setPlan({ ...DEFAULT_PLAN, currency: DEFAULT_SETTINGS.currency });
       setDraft(emptyDraft(DEFAULT_SETTINGS.defaultTariffPerKwh));
     }).finally(() => {
       setHydrated(true);
@@ -345,7 +349,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setSettings((value) => ({ ...value, defaultTariffPerKwh }));
     setDraft((value) => ({ ...value, tariffPerKwh: defaultTariffPerKwh }));
   };
-  const updatePlan = (updates: Partial<EnergyPlan>) => setPlan((value) => ({ ...value, ...updates, updatedAt: now() }));
+  const updatePlan = (updates: Partial<EnergyPlan>) => setPlan((value) => ({ ...value, ...updates, currency: settings.currency, updatedAt: now() }));
 
   const unlockFeature = async (feature: RewardedFeature) => {
     if (!internetAvailable) return 'offline';
