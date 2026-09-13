@@ -172,7 +172,6 @@ const isSavedSimulation = (value: unknown): value is SavedSimulation => {
     && Number.isFinite(item.input.hoursPerDay) && item.input.hoursPerDay > 0 && item.input.hoursPerDay <= 24
     && Number.isInteger(item.input.daysPerMonth) && item.input.daysPerMonth >= 1 && item.input.daysPerMonth <= 31
     && (item.input.quantity === undefined || (Number.isInteger(item.input.quantity) && item.input.quantity >= 1 && item.input.quantity <= 99))
-    && (item.input.room === undefined || typeof item.input.room === 'string')
     && Number.isFinite(item.input.tariffPerKwh) && item.input.tariffPerKwh > 0
     && Number.isFinite(item.result.costPerMonth) && item.result.costPerMonth >= 0
     && Number.isFinite(item.result.consumptionKwhMonth) && item.result.consumptionKwhMonth >= 0;
@@ -184,7 +183,7 @@ const normalizeHistory = (raw: string | null, fallbackCurrency: CurrencyCode): S
   return value.filter(isSavedSimulation).map((item) => ({
     ...item,
     currency: item.currency ?? fallbackCurrency,
-    input: { ...item.input, quantity: Math.max(1, item.input.quantity ?? 1) },
+    input: { ...item.input, quantity: Math.max(1, item.input.quantity ?? 1), room: typeof item.input.room === 'string' ? item.input.room.trim() || undefined : undefined },
   }));
 };
 
@@ -318,7 +317,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setDraft({ ...simulation.input });
   };
 
-  const extraHistoryActive = internetAvailable && isActiveUntil(ads.extraHistorySlotsUntil);
+  const extraHistoryActive = isActiveUntil(ads.extraHistorySlotsUntil);
   const saveCurrent = (): SaveResult => {
     if (!currentSimulation) return 'none';
     if (history.some((item) => item.id === currentSimulation.id)) return 'saved';
@@ -370,7 +369,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     return 'earned';
   };
 
-  const adFreeActive = internetAvailable && isActiveUntil(ads.adFreeUntil);
+  const adFreeActive = isActiveUntil(ads.adFreeUntil);
   const openAdsPrivacyOptions = async () => {
     const result = await showAdsPrivacyOptions();
     setAdsInitialized(result.adsReady);
@@ -418,9 +417,9 @@ export function AppProvider({ children }: PropsWithChildren) {
     maybeShowInterstitial,
     canShowBanner: internetAvailable && adsInitialized && !adFreeActive,
     adFreeActive,
-    expandedComparisonActive: internetAvailable && isActiveUntil(ads.expandedComparisonUntil),
+    expandedComparisonActive: isActiveUntil(ads.expandedComparisonUntil),
     extraHistoryActive,
-    whatIfActive: internetAvailable && isActiveUntil(ads.whatIfUnlockedUntil),
+    whatIfActive: isActiveUntil(ads.whatIfUnlockedUntil),
     internetAvailable,
   // Functions are intentionally regenerated with the current localized state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
