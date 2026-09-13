@@ -11,7 +11,8 @@ import { PUBLIC_LINKS } from '../../src/config/publicLinks';
 import { AppTheme, CurrencyCode, SupportedLocale } from '../../src/types';
 import { formatCurrency, formatCurrencySymbol, parseDecimal } from '../../src/utils/calculation';
 
-const localeNames: Record<SupportedLocale, string> = { 'pt-BR': 'Português', 'en-US': 'English', 'es-ES': 'Español', 'fr-FR': 'Français' };\nconst currencyNames: Record<CurrencyCode, string> = { BRL: 'Real brasileiro (BRL)', USD: 'Dólar americano (USD)', EUR: 'Euro (EUR)' };
+const localeNames: Record<SupportedLocale, string> = { 'pt-BR': 'Português', 'en-US': 'English', 'es-ES': 'Español', 'fr-FR': 'Français' };
+const currencyNames: Record<CurrencyCode, string> = { BRL: 'Real brasileiro (BRL)', USD: 'Dólar americano (USD)', EUR: 'Euro (EUR)' };
 
 export default function SettingsScreen() {
   const { colors, t, settings, ads, setLocale, setCurrency, setTheme, setDefaultTariff, clearHistory, clearAllLocalData, openAdsPrivacyOptions } = useApp();
