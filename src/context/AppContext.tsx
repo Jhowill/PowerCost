@@ -145,6 +145,11 @@ const normalizeAds = (raw: string | null): AdsState => {
     ...DEFAULT_ADS,
     ...value,
     schemaVersion: 2,
+    adFreeUntil: validIsoDate(value.adFreeUntil),
+    expandedComparisonUntil: validIsoDate(value.expandedComparisonUntil),
+    extraHistorySlotsUntil: validIsoDate(value.extraHistorySlotsUntil),
+    whatIfUnlockedUntil: validIsoDate(value.whatIfUnlockedUntil),
+    lastInterstitialShownAt: validIsoDate(value.lastInterstitialShownAt),
     tipsUnlockedSimulationIds: Array.isArray(value.tipsUnlockedSimulationIds)
       ? value.tipsUnlockedSimulationIds.filter((id): id is string => typeof id === 'string')
       : [],
