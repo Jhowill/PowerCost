@@ -14,7 +14,8 @@ export const getImpactLevel = (cost: number): ImpactLevel => {
 };
 
 export const calculateEnergyCost = (input: CalculationDraft): CalculationResult => {
-  const consumptionKwhMonth = (input.powerWatts * input.hoursPerDay * input.daysPerMonth) / 1000;
+  const quantity = Math.max(1, input.quantity ?? 1);
+  const consumptionKwhMonth = (input.powerWatts * quantity * input.hoursPerDay * input.daysPerMonth) / 1000;
   const costPerMonth = consumptionKwhMonth * input.tariffPerKwh;
   return {
     consumptionKwhMonth,
