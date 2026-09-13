@@ -95,6 +95,7 @@ type AppContextValue = {
   clearAllLocalData: () => Promise<void>;
   isCurrentSaved: boolean;
   setLocale: (locale: SupportedLocale) => void;
+  setCurrency: (currency: CurrencyCode) => void;
   setTheme: (theme: AppTheme) => void;
   setDefaultTariff: (value: number) => void;
   updatePlan: (updates: Partial<EnergyPlan>) => void;
@@ -404,6 +405,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     clearAllLocalData,
     isCurrentSaved: Boolean(currentSimulation && history.some((item) => item.id === currentSimulation.id)),
     setLocale,
+    setCurrency,
     setTheme,
     setDefaultTariff,
     updatePlan,
