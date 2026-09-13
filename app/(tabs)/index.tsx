@@ -48,7 +48,7 @@ export default function HomeScreen() {
               <Text style={[styles.tipTitle, { color: colors.text }]}>{t('home.lastTitle')}</Text>
               <Text style={[styles.lastName, { color: colors.text }]}>{last.input.applianceNameKey ? t(last.input.applianceNameKey) : last.input.applianceName}</Text>
             </View>
-            <Text style={[styles.lastCost, { color: colors.primary }]}>{formatCurrency(last.result.costPerMonth, settings.locale, settings.currency)}</Text>
+            <Text style={[styles.lastCost, { color: colors.primary }]}>{formatCurrency(last.result.costPerMonth, settings.locale, last.currency)}</Text>
           </Card>
         </Pressable>
       ) : null}
