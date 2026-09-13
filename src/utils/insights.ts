@@ -12,11 +12,11 @@ export type SavingsPlan = {
 };
 
 const RECOMMENDED_REDUCTION_BY_APPLIANCE: Record<string, number> = {
-  airConditioner: 15,
-  shower: 20,
+  air_conditioner: 15,
+  electric_shower: 20,
   refrigerator: 10,
   tv: 20,
-  washingMachine: 15,
+  washing_machine: 15,
   fan: 15,
   computer: 20,
   lamp: 25,
@@ -26,10 +26,10 @@ export const getRecommendedReduction = (applianceId: string) =>
   RECOMMENDED_REDUCTION_BY_APPLIANCE[applianceId] ?? 15;
 
 export const getSavingActionKey = (applianceId: string) => {
-  if (applianceId === 'airConditioner') return 'result.action.airConditioner';
-  if (applianceId === 'shower') return 'result.action.shower';
+  if (applianceId === 'air_conditioner') return 'result.action.airConditioner';
+  if (applianceId === 'electric_shower') return 'result.action.shower';
   if (applianceId === 'refrigerator') return 'result.action.refrigerator';
-  if (applianceId === 'washingMachine') return 'result.action.washingMachine';
+  if (applianceId === 'washing_machine') return 'result.action.washingMachine';
   if (applianceId === 'lamp') return 'result.action.lamp';
   if (applianceId === 'tv' || applianceId === 'computer') return 'result.action.electronics';
   return 'result.action.general';
