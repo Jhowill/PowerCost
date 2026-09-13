@@ -17,6 +17,7 @@ const currencyNames: Record<CurrencyCode, string> = { BRL: 'Real brasileiro (BRL
 export default function SettingsScreen() {
   const { colors, t, settings, ads, setLocale, setCurrency, setTheme, setDefaultTariff, clearHistory, clearAllLocalData, openAdsPrivacyOptions } = useApp();
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [tariffText, setTariffText] = useState(String(settings.defaultTariffPerKwh ?? 0.9).replace('.', ','));
 
@@ -51,6 +52,7 @@ export default function SettingsScreen() {
       <SectionLabel>{t('settings.general')}</SectionLabel>
       <Card style={styles.group}>
         <SettingRow label={t('settings.language')} value={localeNames[settings.locale]} onPress={() => setLanguageOpen(true)} />
+        <SettingRow label={t('settings.currency')} value={currencyNames[settings.currency]} onPress={() => setCurrencyOpen(true)} />
         <SettingRow label={t('settings.theme')} value={themeLabel} onPress={() => setThemeOpen(true)} />
         <SettingRow label={t('settings.defaultTariff')} value={settings.defaultTariffPerKwh ? `${formatCurrency(settings.defaultTariffPerKwh, settings.locale, settings.currency)}/kWh` : '—'} />
         <Field label={t('settings.defaultTariff')} value={tariffText} onChangeText={setTariffText} keyboardType="decimal-pad" unit={`${formatCurrencySymbol(settings.currency)}/kWh`} />
