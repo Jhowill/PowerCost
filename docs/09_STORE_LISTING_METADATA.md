@@ -41,7 +41,7 @@ PRINCIPAIS RECURSOS
 • Histórico de cálculos salvo no aparelho
 • Comparação entre aparelhos para identificar os maiores custos
 • Cenários de redução de uso e economia projetada
-• Planejamento da casa por cômodo, meta mensal e comparação com faturas
+• Planejamento da casa por cômodo, meta mensal, comparação com faturas e evolução mensal
 • Planos e dicas práticas baseados nos dados informados
 • Temas claro e escuro
 • Português, inglês, espanhol e francês
