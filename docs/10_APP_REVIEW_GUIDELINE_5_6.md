@@ -30,9 +30,9 @@ Updated August 24, 2026.
 > 4. Unlock a personalized energy-saving plan for the current estimate.
 > 5. Unlock “What if?” scenarios for 30 minutes.
 >
-> Core calculations are always available without watching a rewarded ad. A temporary benefit is granted only after Google Mobile Ads reports the EARNED_REWARD event. Internet access and ad inventory are required.
+> Core calculations and the household plan are always available without watching a rewarded ad. A temporary benefit is granted only after Google Mobile Ads reports the EARNED_REWARD event. Internet access and ad inventory are required.
 >
-> Review path: open the Extras tab to see all rewarded features. For result-based features, go to Home > Calculate Now, select an appliance, enter usage and electricity rate, and tap Calculate.
+> Review path: open the Extras tab to see all rewarded features. From Home, open House energy plan to set a monthly target, compare a bill, group saved appliances by room, and select energy actions. For result-based features, go to Home > Calculate Now, select an appliance, enter usage and electricity rate, and tap Calculate.
 >
 > We respectfully ask you to review this new build and let us know if any additional specific behavior requires clarification.
 >
