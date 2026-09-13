@@ -25,6 +25,8 @@ export type CalculationDraft = {
   powerWatts: number;
   hoursPerDay: number;
   daysPerMonth: number;
+  quantity?: number;
+  room?: string;
   tariffPerKwh: number;
 };
 
@@ -39,6 +41,7 @@ export type CalculationResult = {
 
 export type SavedSimulation = {
   id: string;
+  currency: CurrencyCode;
   input: CalculationDraft;
   result: CalculationResult;
   createdAt: string;
@@ -61,4 +64,14 @@ export type AdsState = {
   tipsUnlockedSimulationIds: string[];
   lastInterstitialShownAt?: string;
   completedCalculationsSinceLastInterstitial: number;
+};
+
+
+export type EnergyPlan = {
+  schemaVersion: 1;
+  targetMonthlyCost?: number;
+  measuredMonthlyKwh?: number;
+  measuredMonthlyCost?: number;
+  actions: string[];
+  updatedAt: string;
 };
