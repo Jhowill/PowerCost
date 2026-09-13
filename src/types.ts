@@ -67,9 +67,18 @@ export type AdsState = {
 };
 
 
+export type EnergyPlanPeriod = {
+  id: string;
+  label: string;
+  measuredMonthlyKwh?: number;
+  measuredMonthlyCost?: number;
+  createdAt: string;
+};
+
 export type EnergyPlan = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   currency: CurrencyCode;
+  periods: EnergyPlanPeriod[];
   targetMonthlyCost?: number;
   measuredMonthlyKwh?: number;
   measuredMonthlyCost?: number;
