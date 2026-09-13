@@ -258,7 +258,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     if (!hydrated || !adsInitialized) return;
     let wasBackgrounded = false;
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'background' || nextState === 'inactive') {
+      if (nextState === 'background') {
         wasBackgrounded = true;
         return;
       }
