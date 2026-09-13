@@ -62,7 +62,7 @@ export default function HistoryScreen() {
                   <Text style={[styles.itemName, { color: colors.text }]}>{item.input.applianceNameKey ? t(item.input.applianceNameKey) : item.input.applianceName}</Text>
                   <Text style={[styles.itemMeta, { color: colors.textMuted }]}>{formatDate(item.createdAt, settings.locale)} • {formatNumber(item.result.consumptionKwhMonth, settings.locale)} kWh</Text>
                 </View>
-                <Text style={[styles.itemCost, { color: colors.primary }]}>{formatCurrency(item.result.costPerMonth, settings.locale, settings.currency)}<Text style={styles.perMonth}>/{t('result.perMonth')}</Text></Text>
+                <Text style={[styles.itemCost, { color: colors.primary }]}>{formatCurrency(item.result.costPerMonth, settings.locale, item.currency)}<Text style={styles.perMonth}>/{t('result.perMonth')}</Text></Text>
               </Pressable>
               <View style={[styles.actions, { borderTopColor: colors.border }]}>
                 <SmallAction icon="eye-outline" label={t('common.view')} onPress={() => open(item.id)} />
