@@ -10,7 +10,8 @@ import { APP_LIMITS, formatCurrency } from '../src/utils/calculation';
 
 export default function CompareScreen() {
   const { colors, t, history, settings, ads, expandedComparisonActive, setCurrentSimulation, resetCalculation, maybeShowInterstitial } = useApp();
-  const sorted = [...history].sort((a, b) => b.result.costPerMonth - a.result.costPerMonth);
+  const comparable = history.filter((item) => item.currency === settings.currency);
+  const sorted = [...comparable].sort((a, b) => b.result.costPerMonth - a.result.costPerMonth);
   const limit = expandedComparisonActive ? APP_LIMITS.rewardedComparison : APP_LIMITS.freeComparison;
   const visible = sorted.slice(0, limit);
   const max = visible[0]?.result.costPerMonth || 1;
@@ -22,7 +23,7 @@ export default function CompareScreen() {
   return (
     <Page>
       <Header title={t('compare.title')} subtitle={t('compare.subtitle')} back onBack={goBack} />
-      {history.length < 2 ? (
+      {comparable.length < 2 ? (
         <EmptyState icon="bar-chart-outline" title={t('compare.emptyTitle')} text={t('compare.emptyText')} action={t('compare.add')} onAction={add} />
       ) : (
         <>
@@ -39,7 +40,7 @@ export default function CompareScreen() {
                 <View style={styles.rankCopy}>
                   <View style={styles.rankTop}>
                     <Text numberOfLines={1} style={[styles.rankName, { color: colors.text }]}>{item.input.applianceNameKey ? t(item.input.applianceNameKey) : item.input.applianceName}</Text>
-                    <Text style={[styles.rankCost, { color: colors.primary }]}>{formatCurrency(item.result.costPerMonth, settings.locale, settings.currency)}</Text>
+                    <Text style={[styles.rankCost, { color: colors.primary }]}>{formatCurrency(item.result.costPerMonth, settings.locale, item.currency)}</Text>
                   </View>
                   <View style={[styles.barTrack, { backgroundColor: colors.border }]}><View style={[styles.barValue, { backgroundColor: colors.primary, width: `${Math.max(5, (item.result.costPerMonth / max) * 100)}%` }]} /></View>
                   <Text style={[styles.share, { color: colors.textMuted }]}>{t('compare.share', { value: Math.round((item.result.costPerMonth / total) * 100) })}</Text>
@@ -47,7 +48,7 @@ export default function CompareScreen() {
               </Card>
             </Pressable>
           ))}
-          {sorted.length > APP_LIMITS.freeComparison && !expandedComparisonActive ? (
+          {comparable.length > APP_LIMITS.freeComparison && !expandedComparisonActive ? (
             <RewardedCard title={t('compare.unlock')} duration={t('unlock.compareTime')} feature="expanded_comparison" activeUntil={ads.expandedComparisonUntil} />
           ) : null}
           <Button label={t('compare.add')} onPress={add} icon="add-circle-outline" />
