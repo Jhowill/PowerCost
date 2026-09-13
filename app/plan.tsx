@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BannerAdSlot } from '../src/components/BannerAdSlot';
@@ -20,6 +20,14 @@ export default function PlanScreen() {
   const [targetText, setTargetText] = useState(plan.targetMonthlyCost ? String(plan.targetMonthlyCost).replace('.', ',') : '');
   const [measuredKwhText, setMeasuredKwhText] = useState(plan.measuredMonthlyKwh ? String(plan.measuredMonthlyKwh).replace('.', ',') : '');
   const [measuredCostText, setMeasuredCostText] = useState(plan.measuredMonthlyCost ? String(plan.measuredMonthlyCost).replace('.', ',') : '');
+  const planMatchesCurrency = plan.currency === settings.currency;
+  useEffect(() => {
+    if (!planMatchesCurrency) {
+      setTargetText('');
+      setMeasuredKwhText('');
+      setMeasuredCostText('');
+    }
+  }, [planMatchesCurrency]);
   const estimates = useMemo(() => history.filter((item) => item.currency === settings.currency), [history, settings.currency]);
   const total = estimates.reduce((sum, item) => sum + item.result.costPerMonth, 0);
   const rooms = useMemo(() => {
@@ -30,7 +38,7 @@ export default function PlanScreen() {
     });
     return [...grouped.entries()].sort((a, b) => b[1] - a[1]);
   }, [estimates, t]);
-  const target = plan.targetMonthlyCost;
+  const target = planMatchesCurrency ? plan.targetMonthlyCost : undefined;
   const gap = target ? total - target : 0;
   const savePlan = () => {
     const targetValue = parseDecimal(targetText);
@@ -56,6 +64,7 @@ export default function PlanScreen() {
       </Card>
 
       <SectionLabel>{t('plan.measurement')}</SectionLabel>
+      {!planMatchesCurrency ? <Card style={styles.comparison}><Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.currencyChanged')}</Text></Card> : null}
       <Card style={styles.form}>
         <Text style={[styles.formHint, { color: colors.textMuted }]}>{t('plan.measurementHint')}</Text>
         <Field label={t('plan.target')} value={targetText} onChangeText={setTargetText} keyboardType="decimal-pad" unit={settings.currency} />
@@ -64,7 +73,7 @@ export default function PlanScreen() {
         <Button label={t('plan.save')} onPress={savePlan} icon="save-outline" />
       </Card>
 
-      {plan.measuredMonthlyKwh || plan.measuredMonthlyCost ? (
+      {planMatchesCurrency && (plan.measuredMonthlyKwh || plan.measuredMonthlyCost) ? (
         <Card style={styles.comparison}>
           <Text style={[styles.cardTitle, { color: colors.text }]}>{t('plan.invoiceComparison')}</Text>
           {plan.measuredMonthlyKwh ? <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('plan.measuredKwhValue', { value: formatNumber(plan.measuredMonthlyKwh, settings.locale, 1) })}</Text> : null}
