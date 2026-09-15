@@ -120,6 +120,8 @@ let cachedInterstitial: { ad: FullscreenAd; loadedAt: number; dispose: () => voi
 let interstitialLoading = false;
 let preloadGeneration = 0;
 export const cancelPreloadedAds = () => {
+  openCache?.dispose(); openCache = null;
+  openLoadingDispose?.(); openLoadingDispose = null;
   preloadGeneration += 1;
   cachedInterstitial?.dispose();
   cachedInterstitial = null;
@@ -258,8 +260,68 @@ export const showInterstitialAd = async (): Promise<boolean> => {
   } catch { recordAdEvent('interstitial-error'); fullscreenAdShowing = false; return false; }
 };
 
-// Retained as an explicit disabled API. No delayed ads on foreground transitions.
-export const showAppOpenAd = async (): Promise<boolean> => false;
+let openCache: { ad: FullscreenAd; loadedAt: number; dispose: () => void } | null = null;
+let openLoadingDispose: (() => void) | null = null;
+let lastOpenAt = 0;
+export const beginAppOpenBackground = () =>
+  !fullscreenAdShowing && !initializationPromise && adsReady ? Date.now() : null;
+
+export const preloadAppOpenAd = () => {
+  if (!nativeAdsAvailable || !adsReady || openCache || openLoadingDispose) return;
+  try {
+    const sdk = require('react-native-google-mobile-ads') as unknown as {
+      AppOpenAd: { createForAdRequest: (id: string) => FullscreenAd };
+      AdEventType: { LOADED: string; ERROR: string }; TestIds: { APP_OPEN: string };
+    };
+    const ad = sdk.AppOpenAd.createForAdRequest(getAdUnitId('appOpen', sdk.TestIds.APP_OPEN));
+    const cleanups: (() => void)[] = [];
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const dispose = () => { disposed = true; clearTimeout(timer); cleanups.splice(0).forEach((fn) => fn()); };
+    const fail = (error?: unknown) => {
+      recordAdEvent('open-error', error); dispose();
+      if (openLoadingDispose === dispose) openLoadingDispose = null;
+      if (openCache?.ad === ad) openCache = null;
+    };
+    openLoadingDispose = dispose;
+    cleanups.push(ad.addAdEventListener(sdk.AdEventType.LOADED, () => {
+      if (disposed || !adsReady) { fail(); return; }
+      clearTimeout(timer); openLoadingDispose = null;
+      openCache = { ad, loadedAt: Date.now(), dispose }; recordAdEvent('open-loaded');
+    }));
+    cleanups.push(ad.addAdEventListener(sdk.AdEventType.ERROR, fail));
+    timer = setTimeout(fail, 15_000);
+    try { ad.load(); } catch (error) { fail(error); }
+  } catch (error) { recordAdEvent('open-error', error); openLoadingDispose?.(); openLoadingDispose = null; }
+};
+
+// Called synchronously on a genuine foreground transition, never from a load callback.
+export const showAppOpenAd = async (backgroundAt?: number | null): Promise<boolean> => {
+  const elapsed = backgroundAt == null ? 0 : Date.now() - backgroundAt;
+  if (elapsed < 60_000 || !nativeAdsAvailable || !adsReady || fullscreenAdShowing || initializationPromise || AppState.currentState !== 'active' || Date.now() - lastOpenAt < 600_000) return false;
+  const cached = openCache;
+  if (!cached || Date.now() - cached.loadedAt >= 4 * 60 * 60_000) {
+    cached?.dispose(); openCache = null; preloadAppOpenAd(); return false;
+  }
+  openCache = null; cached.dispose(); fullscreenAdShowing = true;
+  lastOpenAt = Date.now();
+  try {
+    const sdk = require('react-native-google-mobile-ads') as unknown as { AdEventType: { CLOSED: string; ERROR: string } };
+    return await new Promise<boolean>((resolve) => {
+      let settled = false;
+      const cleanups: (() => void)[] = [];
+      const finish = (shown: boolean) => {
+        if (settled) return; settled = true;
+        cleanups.forEach((fn) => fn()); fullscreenAdShowing = false;
+        resolve(shown); preloadAppOpenAd();
+      };
+      const fail = (error?: unknown) => { recordAdEvent('open-error', error); finish(false); };
+      cleanups.push(cached.ad.addAdEventListener(sdk.AdEventType.CLOSED, () => finish(true)));
+      cleanups.push(cached.ad.addAdEventListener(sdk.AdEventType.ERROR, fail));
+      try { void cached.ad.show().catch(fail); } catch (error) { fail(error); }
+    });
+  } catch (error) { recordAdEvent('open-error', error); fullscreenAdShowing = false; return false; }
+};
 
 export const showAdsPrivacyOptions = async (): Promise<{ opened: boolean; adsReady: boolean }> => {
   if (!nativeAdsAvailable || fullscreenAdShowing || initializationPromise || AppState.currentState !== 'active') return { opened: false, adsReady };

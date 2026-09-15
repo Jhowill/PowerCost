@@ -91,7 +91,7 @@ function adsHarness(platform = 'ios') {
   } };
   const sdk = { default: () => ({ initialize: async () => {}, setRequestConfiguration: async () => {} }),
     AdsConsent: { gatherConsent: async () => ({ canRequestAds: true }), showPrivacyOptionsForm: async () => ({ canRequestAds: false }) },
-    InterstitialAd: factory, RewardedAd: factory, TestIds: {},
+    InterstitialAd: factory, RewardedAd: factory, AppOpenAd: factory, TestIds: {},
     AdEventType: { LOADED: 'loaded', ERROR: 'error', CLOSED: 'closed' },
     RewardedAdEventType: { LOADED: 'loaded', EARNED_REWARD: 'earned' } };
   const svc = loader({
@@ -134,7 +134,7 @@ test('interstitial skips missing cache, never shows on late load, holds lock unt
   assert.equal(await h.svc.showInterstitialAd(), false);
   h.instances[0].emit('closed'); assert.equal(await p, true);
 });
-test('consent withdrawal invalidates cached ads and App Open stays disabled', async () => {
+test('consent withdrawal invalidates cached ads and blocks App Open', async () => {
   const h = adsHarness(); await h.svc.initializeAds(); h.svc.preloadInterstitialAd(); h.instances[0].emit('loaded');
   await h.svc.showAdsPrivacyOptions(); assert.equal(await h.svc.showInterstitialAd(), false);
   assert.equal(await h.svc.showAppOpenAd(), false); assert.equal(h.instances[0].shown, 0);
@@ -224,6 +224,34 @@ test('earned benefit is written before native close and remains active offline',
   h.offline(); h.render(); assert.equal(h.value.whatIfActive, true);
 });
 for (const platform of ['ios', 'android']) {
+  test(platform + ': App Open uses only a fresh cached ad and holds the fullscreen lock', async () => {
+    const h = adsHarness(platform); await h.svc.initializeAds();
+    h.svc.preloadAppOpenAd(); h.instances[0].emit('loaded');
+    const backgroundAt = h.svc.beginAppOpenBackground(); h.advance(61_000);
+    const opening = h.svc.showAppOpenAd(backgroundAt); await flush();
+    assert.equal(h.instances[0].shown, 1);
+    assert.equal(h.svc.beginAppOpenBackground(), null);
+    assert.equal(await h.svc.showRewardedAd(), 'unavailable');
+    h.instances[0].emit('closed'); assert.equal(await opening, true);
+    h.instances[1].emit('loaded');
+    assert.equal(await h.svc.showAppOpenAd(backgroundAt), false);
+  });
+  test(platform + ': App Open skips missing, expired and short-background opportunities', async () => {
+    const h = adsHarness(platform); await h.svc.initializeAds();
+    const backgroundAt = h.svc.beginAppOpenBackground();
+    assert.equal(await h.svc.showAppOpenAd(backgroundAt), false);
+    h.advance(61_000); assert.equal(await h.svc.showAppOpenAd(backgroundAt), false);
+    h.instances[0].emit('loaded'); assert.equal(h.instances[0].shown, 0);
+    h.advance(4 * 60 * 60_000); assert.equal(await h.svc.showAppOpenAd(backgroundAt), false);
+    assert.equal(h.instances[0].shown, 0);
+  });
+  test(platform + ': consent withdrawal cancels in-flight App Open loading', async () => {
+    const h = adsHarness(platform); await h.svc.initializeAds();
+    h.svc.preloadAppOpenAd(); const backgroundAt = h.svc.beginAppOpenBackground();
+    await h.svc.showAdsPrivacyOptions(); h.instances[0].emit('loaded'); h.advance(61_000);
+    assert.equal(await h.svc.showAppOpenAd(backgroundAt), false);
+    assert.equal(h.instances[0].shown, 0);
+  });
   test(platform + ': initialization retries transient failures and publishes readiness', async () => {
     const h = adsHarness(platform), ready = [];
     let calls = 0;
@@ -282,6 +310,21 @@ test('web service exposes the context lifecycle without native requests', async 
   assert.equal(ready, true); off();
   assert.equal(await svc.showRewardedAd(), 'unavailable');
   assert.equal(await svc.showInterstitialAd(), false);
+});
+test('native ads loaded after leaving Home are destroyed without updating the screen', async () => {
+  let effect, resolveAd, destroyed = 0, visible = null;
+  const component = loader({
+    react: { useState: () => [null, (v) => { visible = v; }], useEffect: (fn) => { effect = fn; } },
+    'react-native': { StyleSheet: { create: (v) => v } },
+    '@react-navigation/native': { useIsFocused: () => true }, 'expo-router': { router: {} },
+    '../context/AppContext': { useApp: () => ({ canShowBanner: true }) },
+    '../config/ads': { getAdUnitId: () => 'test' }, '../services/adsService': { nativeAdsAvailable: true },
+    './AdErrorBoundary': {}, './ui': {},
+    'react-native-google-mobile-ads': { TestIds: { NATIVE: 'test' }, NativeAd: { createForAdRequest: () => new Promise((resolve) => { resolveAd = resolve; }) } },
+  })('src/components/NativeAdSlot');
+  component.NativeAdSlot(); const cleanup = effect(); cleanup();
+  resolveAd({ destroy: () => { destroyed++; } }); await flush();
+  assert.equal(destroyed, 1); assert.equal(visible, null);
 });
 test('ad diagnostics are bounded and callers cannot modify internal entries', () => {
   const diagnostics = loader()('src/services/adDiagnostics');

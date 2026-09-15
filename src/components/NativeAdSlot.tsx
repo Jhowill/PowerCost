@@ -5,6 +5,10 @@ import { getAdUnitId } from '../config/ads';
 import { useApp } from '../context/AppContext';
 import { nativeAdsAvailable } from '../services/adsService';
 import { AdErrorBoundary } from './AdErrorBoundary';
+import { recordAdEvent } from '../services/adDiagnostics';
+import { useIsFocused } from '@react-navigation/native';
+import { router } from 'expo-router';
+import { Button } from './ui';
 
 declare const require: (moduleName: string) => Record<string, unknown>;
 
@@ -29,31 +33,34 @@ type NativeAdsModule = {
 export function NativeAdSlot() {
   const { canShowBanner, colors, t } = useApp();
   const [nativeAd, setNativeAd] = useState<NativeAdLike | null>(null);
+  const focused = useIsFocused();
 
   useEffect(() => {
     setNativeAd(null);
-    if (!canShowBanner || !nativeAdsAvailable) return;
+    if (!canShowBanner || !nativeAdsAvailable || !focused) return;
     let mounted = true;
     let loadedAd: NativeAdLike | null = null;
+    const destroy = (ad: NativeAdLike) => { try { ad.destroy(); } catch (error) { recordAdEvent('native-error', error); } };
     try {
       const ads = require('react-native-google-mobile-ads') as unknown as NativeAdsModule;
       void ads.NativeAd.createForAdRequest(getAdUnitId('native', ads.TestIds.NATIVE))
         .then((ad) => {
           loadedAd = ad;
-          if (mounted) setNativeAd(ad);
-          else ad.destroy();
+          if (mounted) { recordAdEvent('native-loaded'); setNativeAd(ad); }
+          else destroy(ad);
         })
-        .catch(() => undefined);
+        .catch((error) => recordAdEvent('native-error', error));
     } catch {
       return;
     }
     return () => {
       mounted = false;
-      loadedAd?.destroy();
+      setNativeAd(null);
+      if (loadedAd) destroy(loadedAd);
     };
-  }, [canShowBanner]);
+  }, [canShowBanner, focused]);
 
-  if (!canShowBanner || !nativeAd || !nativeAdsAvailable) return null;
+  if (!focused || !canShowBanner || !nativeAd || !nativeAdsAvailable) return null;
 
   try {
     const ads = require('react-native-google-mobile-ads') as unknown as NativeAdsModule;
@@ -88,6 +95,7 @@ export function NativeAdSlot() {
             </View>
           </ads.NativeAsset>
         </ads.NativeAdView>
+        <Button label={t('ads.report')} variant="ghost" onPress={() => router.push('/report-ad' as never)} />
       </AdErrorBoundary>
     );
   } catch {
@@ -97,7 +105,7 @@ export function NativeAdSlot() {
 
 const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 18, padding: 14, marginTop: 6, marginBottom: 16, overflow: 'hidden' },
-  sponsorRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10 },
+  sponsorRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10, paddingRight: 24 },
   sponsored: { fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
   advertiser: { maxWidth: 180, fontSize: 11 },
   heading: { flexDirection: 'row', alignItems: 'center', gap: 10 },

@@ -1,4 +1,4 @@
-type AdEvent = 'init-ready' | 'init-error' | 'consent-blocked' | 'banner-loaded' | 'banner-error' | 'interstitial-loaded' | 'interstitial-error' | 'reward-error' | 'reward-earned' | 'reward-cancelled';
+type AdEvent = 'init-ready' | 'init-error' | 'consent-blocked' | 'banner-loaded' | 'banner-error' | 'interstitial-loaded' | 'interstitial-error' | 'reward-error' | 'reward-earned' | 'reward-cancelled' | 'native-loaded' | 'native-error' | 'open-loaded' | 'open-error';
 type Diagnostic = { event: AdEvent; at: number; code?: string };
 const recent: Diagnostic[] = [];
 

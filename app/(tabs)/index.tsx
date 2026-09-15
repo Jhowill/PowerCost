@@ -3,7 +3,8 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BannerAdSlot } from '../../src/components/BannerAdSlot';
+import { NativeAdSlot } from '../../src/components/NativeAdSlot';
+import { HomeAppOpen } from '../../src/components/HomeAppOpen';
 import { Button, Card, Header, Page } from '../../src/components/ui';
 import { useApp } from '../../src/context/AppContext';
 import { formatCurrency } from '../../src/utils/calculation';
@@ -22,6 +23,7 @@ export default function HomeScreen() {
   };
   return (
     <Page>
+      <HomeAppOpen />
       <Header title="PowerCost" subtitle={t('home.subtitle')} />
 
       <Card tone="primary" style={styles.hero}>
@@ -71,7 +73,7 @@ export default function HomeScreen() {
           <Text style={[styles.tipText, { color: colors.textMuted }]}>{t('home.tip')}</Text>
         </View>
       </Card>
-      <BannerAdSlot />
+      <NativeAdSlot />
     </Page>
   );
 }

@@ -9,6 +9,8 @@ export const subscribeAdsReady = (listener: (ready: boolean) => void) => {
   return () => {};
 };
 export const preloadInterstitialAd = () => {};
+export const preloadAppOpenAd = () => {};
+export const beginAppOpenBackground = (): number | null => null;
 export const cancelPreloadedAds = () => {};
 
 export const showRewardedAd = async (): Promise<RewardedAdResult> => 'unavailable';

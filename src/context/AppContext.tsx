@@ -204,7 +204,7 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     if (hydrated && adsInitialized && !isActiveUntil(ads.adFreeUntil)) preloadInterstitialAd();
-    // App Open is disabled: the app has no foreground loading phase.
+    // Home owns the separate, preloaded App Open foreground opportunity.
   }, [hydrated, adsInitialized, ads.adFreeUntil]);
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {

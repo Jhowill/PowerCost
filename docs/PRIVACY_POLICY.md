@@ -51,7 +51,7 @@ No iOS, o acesso ao identificador de publicidade e qualquer rastreamento entre a
 
 Os anúncios premiados são opcionais. Um benefício temporário é liberado somente quando o SDK confirma o evento de recompensa após a conclusão do anúncio. Sem confirmação de recompensa, falha, fechamento antecipado ou indisponibilidade não liberam o benefício. A internet e o inventário são necessários para assistir a um novo anúncio. Uma recompensa já confirmada permanece disponível offline até sua expiração; queda de conexão ou erro posterior não revoga o benefício. Os benefícios não possuem valor monetário.
 
-Denúncias de anúncios podem ser preparadas em Ajustes > Denunciar anúncio inadequado. O formulário abre o GitHub e nada é enviado automaticamente. Se você enviar, o conteúdo ficará público e poderá exigir conta no GitHub; não inclua dados pessoais, identificadores ou faturas. O aplicativo não anexa o histórico ou os dados da casa. Banner, intersticial previamente carregado e premiado são os formatos exibidos; App Open automático e anúncios nativos não são exibidos nesta versão.
+Denúncias de anúncios podem ser preparadas em Ajustes > Denunciar anúncio inadequado. O formulário abre o GitHub e nada é enviado automaticamente. Se você enviar, o conteúdo ficará público e poderá exigir conta no GitHub; não inclua dados pessoais, identificadores ou faturas. O aplicativo não anexa o histórico ou os dados da casa. O app exibe banners, intersticiais previamente carregados, premiados opcionais e anúncio nativo identificado na Home. O App Open pode aparecer ao retornar à Home após pelo menos 1 minuto em segundo plano, somente se já carregado, com intervalo mínimo de 10 minutos. Não aparece atrasado durante a navegação. O benefício sem anúncios também suspende nativo e App Open.
 
 ### 6. Compartilhamento e transferências internacionais
 
@@ -109,7 +109,7 @@ Where required, PowerCost requests consent choices through the User Messaging Pl
 
 Rewarded ads are optional. A temporary benefit is granted only after the SDK confirms the earned-reward event following ad completion. Without reward confirmation, failure, early closure or unavailability does not grant a benefit. Internet and inventory are required to watch a new ad. A confirmed benefit remains usable offline until expiry; a later network failure or ad error does not revoke it. Benefits have no monetary value.
 
-Ad reports can be prepared under Settings > Report inappropriate ad. The form opens GitHub; nothing is sent automatically. If submitted, its content will be public and a GitHub account may be required; do not include personal data, identifiers or bills. The app does not attach history or household data. This version displays banners, preloaded interstitials and rewarded ads; automatic App Open and native ads are not displayed.
+Ad reports can be prepared under Settings > Report inappropriate ad. The form opens GitHub; nothing is sent automatically. If submitted, its content will be public and a GitHub account may be required; do not include personal data, identifiers or bills. The app does not attach history or household data. This version displays banners, preloaded interstitials, optional rewarded ads and a labeled native ad on Home. App Open may appear when returning to Home after at least 1 minute in the background, only if already loaded, with a minimum 10-minute interval. It never appears later during navigation. The ad-free benefit also suspends native and App Open ads.
 
 ### 6. Sharing and international transfers
 
@@ -155,7 +155,7 @@ Cuando sea obligatorio, se solicitan opciones mediante User Messaging Platform a
 
 Son opcionales. El beneficio temporal solo se concede cuando el SDK confirma el evento de recompensa después de completar el anuncio. Sin confirmación de recompensa, un fallo, cierre anticipado o falta de inventario no concede el beneficio. Internet e inventario son necesarios para ver un anuncio nuevo. Los beneficios confirmados siguen disponibles sin conexión hasta caducar y no se revocan por un fallo posterior. No tienen valor monetario.
 
-Puedes preparar denuncias en Ajustes > Denunciar anuncio inapropiado. Se abre GitHub sin enviar nada automáticamente. Si la envías, será pública y puede requerir cuenta en GitHub; no incluyas datos personales, identificadores ni facturas. No se adjunta el historial ni los datos del hogar. Esta versión muestra banners, intersticiales precargados y anuncios premiados; no muestra App Open automático ni anuncios nativos.
+Puedes preparar denuncias en Ajustes > Denunciar anuncio inapropiado. Se abre GitHub sin enviar nada automáticamente. Si la envías, será pública y puede requerir cuenta en GitHub; no incluyas datos personales, identificadores ni facturas. No se adjunta el historial ni los datos del hogar. Esta versión muestra banners, intersticiales precargados, anuncios premiados opcionales y un anuncio nativo identificado en Inicio. App Open puede aparecer al volver a Inicio tras al menos 1 minuto en segundo plano, solo si ya está cargado y con un intervalo mínimo de 10 minutos. No aparece después durante la navegación. El beneficio sin anuncios también suspende nativos y App Open.
 
 ### 6. Conservación, eliminación y seguridad
 
@@ -189,7 +189,7 @@ Lorsque nécessaire, User Messaging Platform recueille les choix avant d’autor
 
 Elles sont facultatives. Un avantage temporaire n’est accordé qu’après confirmation de l’événement de récompense par le SDK à la fin de l’annonce. Sans confirmation de récompense, un échec, une fermeture anticipée ou une indisponibilité n’accordent rien. Internet et un inventaire sont nécessaires pour regarder une nouvelle annonce. Un avantage confirmé reste utilisable hors ligne jusqu’à expiration et n’est pas révoqué par un échec ultérieur. Il n’a aucune valeur monétaire.
 
-Les signalements sont préparés dans Réglages > Signaler une publicité inappropriée. Le formulaire ouvre GitHub sans envoi automatique. Si vous l’envoyez, son contenu sera public et un compte GitHub peut être nécessaire ; n’incluez ni données personnelles, ni identifiants, ni factures. L’app ne joint ni historique ni données du foyer. Cette version affiche des bannières, interstitiels préchargés et annonces récompensées ; pas d’App Open automatique ni d’annonces natives.
+Les signalements sont préparés dans Réglages > Signaler une publicité inappropriée. Le formulaire ouvre GitHub sans envoi automatique. Si vous l’envoyez, son contenu sera public et un compte GitHub peut être nécessaire ; n’incluez ni données personnelles, ni identifiants, ni factures. L’app ne joint ni historique ni données du foyer. Cette version affiche des bannières, interstitiels préchargés, annonces récompensées facultatives et une annonce native identifiée sur Accueil. App Open peut apparaître au retour sur Accueil après au moins 1 minute en arrière-plan, uniquement si déjà chargé, avec un intervalle minimum de 10 minutes. Il ne surgit pas plus tard pendant la navigation. L’avantage sans publicité suspend aussi les annonces natives et App Open.
 
 ### 6. Conservation, suppression et sécurité
 
