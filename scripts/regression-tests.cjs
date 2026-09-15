@@ -78,9 +78,10 @@ test('periods keep currencies, zero bills, snapshots and every saved month', () 
   assert.equal(validation.localMonth({ getFullYear: () => 2026, getMonth: () => 7 }), '2026-08');
 });
 
-function adsHarness() {
+function adsHarness(platform = 'ios') {
   const timers = new Map(), instances = [], lifecycle = new Set();
   let timerId = 0, online = true;
+  let now = Date.now();
   const appState = { currentState: 'active', addEventListener: (_, fn) => { lifecycle.add(fn); return { remove: () => lifecycle.delete(fn) }; } };
   const factory = { createForAdRequest: () => {
     const listeners = new Map();
@@ -95,12 +96,12 @@ function adsHarness() {
     RewardedAdEventType: { LOADED: 'loaded', EARNED_REWARD: 'earned' } };
   const svc = loader({
     'expo-constants': { executionEnvironment: 'standalone', ExecutionEnvironment: { StoreClient: 'expo' } },
-    'react-native': { Platform: { OS: 'ios' }, AppState: appState },
+    'react-native': { Platform: { OS: platform }, AppState: appState },
     'expo-network': { getNetworkStateAsync: async () => ({ isConnected: online, isInternetReachable: online }) },
     '../config/ads': { getAdUnitId: () => 'test' },
     'react-native-google-mobile-ads': { ...sdk, __esModule: true },
-  }, { setTimeout: (fn, ms) => { const id = ++timerId; timers.set(id, { fn, ms }); return id; }, clearTimeout: (id) => timers.delete(id) })('src/services/adsService');
-  return { svc, instances, timers, offline: () => { online = false; }, background: () => {
+  }, { Date: class extends Date { static now() { return now; } }, setTimeout: (fn, ms) => { const id = ++timerId; timers.set(id, { fn, ms }); return id; }, clearTimeout: (id) => timers.delete(id) })('src/services/adsService');
+  return { svc, sdk, advance: (ms) => { now += ms; }, instances, timers, offline: () => { online = false; }, background: () => {
     appState.currentState = 'background'; lifecycle.forEach((fn) => fn('background'));
   } };
 }
@@ -145,9 +146,10 @@ test('privacy form cannot race a rewarded presentation', async () => {
   h.instances[0].emit('closed'); await reward;
 });
 
-function contextHarness(initial = {}, failingKey) {
+function contextHarness(initial = {}, failingKey, initiallyReady = true) {
   const data = new Map(Object.entries(initial)), written = [], state = [], effects = [], refs = [];
   let stateIndex = 0, effectIndex = 0, refIndex = 0, pendingEffects = [], value, rewardCallback, online = true;
+  let readinessListener;
   const react = { createContext: () => ({ Provider: 'provider' }), createElement: (_, props) => props,
     useState: (init) => { const id = stateIndex++; if (!(id in state)) state[id] = typeof init === 'function' ? init() : init;
       return [state[id], (next) => { state[id] = typeof next === 'function' ? next(state[id]) : next; }]; },
@@ -165,7 +167,7 @@ function contextHarness(initial = {}, failingKey) {
       setItem: async (key, v) => { written.push(key); data.set(key, v); },
       multiRemove: async (keys) => keys.forEach((key) => data.delete(key)),
     },
-    '../services/adsService': { initializeAds: async () => true, preloadInterstitialAd() {}, showInterstitialAd: async () => false,
+    '../services/adsService': { retryAdsInitialization: async () => initiallyReady, subscribeAdsReady: (listener) => { readinessListener = listener; listener(initiallyReady); return () => {}; }, preloadInterstitialAd() {}, showInterstitialAd: async () => false,
       showRewardedAd: async (callback) => { rewardCallback = callback; return new Promise(() => {}); } },
   }, { setInterval: () => 1, clearInterval: () => {} })('src/context/AppContext');
   const render = () => {
@@ -174,7 +176,7 @@ function contextHarness(initial = {}, failingKey) {
     pendingEffects.forEach((fn) => fn());
     return value;
   };
-  return { data, written, render, get value() { return value; },
+  return { data, written, render, setAdsReady: (ready) => readinessListener(ready), get value() { return value; },
     settle: async () => { for (let i = 0; i < 5; i++) { render(); await flush(); } render(); },
     earn: () => rewardCallback(), offline: () => { online = false; } };
 }
@@ -221,6 +223,84 @@ test('earned benefit is written before native close and remains active offline',
   assert.ok(JSON.parse(h.data.get(adsKey)).whatIfUnlockedUntil);
   h.offline(); h.render(); assert.equal(h.value.whatIfActive, true);
 });
+for (const platform of ['ios', 'android']) {
+  test(platform + ': initialization retries transient failures and publishes readiness', async () => {
+    const h = adsHarness(platform), ready = [];
+    let calls = 0;
+    h.sdk.AdsConsent.gatherConsent = async () => { if (++calls === 1) throw Error('temporary'); return { canRequestAds: true }; };
+    const unsubscribe = h.svc.subscribeAdsReady((value) => ready.push(value));
+    assert.equal(await h.svc.retryAdsInitialization(), false);
+    assert.equal(await h.svc.retryAdsInitialization(), false);
+    assert.equal(calls, 1);
+    h.advance(31_000);
+    assert.equal(await h.svc.retryAdsInitialization(), true);
+    assert.deepEqual(ready, [false, true]);
+    await h.svc.showAdsPrivacyOptions();
+    assert.equal(ready.at(-1), false);
+    unsubscribe();
+  });
+  test(platform + ': consent refusal is not reprompted by automatic retries', async () => {
+    const h = adsHarness(platform); let calls = 0;
+    h.sdk.AdsConsent.gatherConsent = async () => { calls++; return { canRequestAds: false }; };
+    await h.svc.retryAdsInitialization(); h.advance(600_000); await h.svc.retryAdsInitialization();
+    assert.equal(calls, 1);
+    h.sdk.AdsConsent.showPrivacyOptionsForm = async () => ({ canRequestAds: true });
+    assert.equal((await h.svc.showAdsPrivacyOptions()).adsReady, true);
+  });
+  test(platform + ': leaving a route cancels pending reward and prevents late display', async () => {
+    const h = adsHarness(platform), controller = new AbortController();
+    const reward = h.svc.showRewardedAd(() => assert.fail('unearned'), controller.signal);
+    await flush(); controller.abort();
+    assert.equal(await reward, 'unavailable');
+    h.instances[0].emit('loaded'); assert.equal(h.instances[0].shown, 0);
+  });
+  test(platform + ': route cancellation during presentation does not discard reward or release lock', async () => {
+    const h = adsHarness(platform), controller = new AbortController(); let grants = 0;
+    const reward = h.svc.showRewardedAd(() => grants++, controller.signal);
+    await flush(); h.instances[0].emit('loaded'); controller.abort(); h.instances[0].emit('earned');
+    assert.equal(grants, 1); assert.equal(await h.svc.showRewardedAd(), 'unavailable');
+    h.instances[0].emit('closed'); assert.equal(await reward, 'earned');
+  });
+  test(platform + ': cancellation before SDK initialization cannot show an ad', async () => {
+    const h = adsHarness(platform), controller = new AbortController();
+    const reward = h.svc.showRewardedAd(() => {}, controller.signal); controller.abort();
+    assert.equal(await reward, 'unavailable'); assert.equal(h.instances.length, 0);
+  });
+  test(platform + ': preview uses test IDs while production retains registered IDs', () => {
+    for (const mode of ['true', 'false']) {
+      const config = loader({ 'react-native': { Platform: { OS: platform } } }, { __DEV__: false, process: { env: { EXPO_PUBLIC_ADS_TEST_MODE: mode } } })('src/config/ads');
+      for (const kind of ['banner', 'interstitial', 'rewarded', 'native', 'appOpen']) {
+        assert.equal(config.getAdUnitId(kind, 'test-id'), mode === 'true' ? 'test-id' : config.PRODUCTION_AD_UNITS[kind]);
+      }
+    }
+  });
+}
+test('web service exposes the context lifecycle without native requests', async () => {
+  const svc = loader()('src/services/adsService.web.ts');
+  svc.preloadInterstitialAd(); svc.cancelPreloadedAds();
+  let ready = false; const off = svc.subscribeAdsReady((v) => { ready = v; });
+  assert.equal(ready, true); off();
+  assert.equal(await svc.showRewardedAd(), 'unavailable');
+  assert.equal(await svc.showInterstitialAd(), false);
+});
+test('ad diagnostics are bounded and callers cannot modify internal entries', () => {
+  const diagnostics = loader()('src/services/adDiagnostics');
+  for (let i = 0; i < 100; i++) diagnostics.recordAdEvent('banner-error');
+  const entries = diagnostics.getAdDiagnostics(); assert.equal(entries.length, 40);
+  entries[0].event = 'modified';
+  assert.equal(diagnostics.getAdDiagnostics()[0].event, 'banner-error');
+  assert.deepEqual(Object.keys(entries[1]).sort(), ['at', 'event']);
+  diagnostics.recordAdEvent('banner-error', { code: 'googleMobileAds/no-fill', message: 'private message', identifier: 'private' });
+  assert.equal(diagnostics.getAdDiagnostics().at(-1).code, 'no-fill');
+  assert.equal(JSON.stringify(diagnostics.getAdDiagnostics()).includes('private'), false);
+});
+test('context restores banners after SDK recovery and removes them on consent withdrawal', async () => {
+  const h = contextHarness({}, undefined, false); await h.settle();
+  assert.equal(h.value.canShowBanner, false);
+  h.setAdsReady(true); h.render(); assert.equal(h.value.canShowBanner, true);
+  h.setAdsReady(false); h.render(); assert.equal(h.value.canShowBanner, false);
+});
+
 test('new translations exist in every locale and interpolation resolves', () => {
   const { dictionaries, translate } = loader()('src/i18n/translations');
   const keys = Object.keys(loader()('src/i18n/corrections').corrections['en-US']);

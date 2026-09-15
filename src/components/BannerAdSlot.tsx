@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { getAdUnitId } from '../config/ads';
 import { nativeAdsAvailable } from '../services/adsService';
 import { AdErrorBoundary } from './AdErrorBoundary';
+import { recordAdEvent } from '../services/adDiagnostics';
 
 declare const require: (moduleName: string) => Record<string, unknown>;
 
@@ -17,19 +18,21 @@ export function BannerAdSlot() {
   if (nativeAdsAvailable) {
     try {
       const ads = require('react-native-google-mobile-ads') as unknown as {
-        BannerAd: React.ComponentType<{ unitId: string; size: string }>;
+        BannerAd: React.ComponentType<{ unitId: string; size: string; onAdLoaded: () => void; onAdFailedToLoad: (error: unknown) => void }>;
         BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: string };
         TestIds: { BANNER: string };
       };
       return (
         <AdErrorBoundary>
           <View style={styles.nativeWrap}>
-            <ads.BannerAd unitId={getAdUnitId('banner', ads.TestIds.BANNER)} size={ads.BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
+            <ads.BannerAd unitId={getAdUnitId('banner', ads.TestIds.BANNER)} size={ads.BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+              onAdLoaded={() => recordAdEvent('banner-loaded')} onAdFailedToLoad={(error) => recordAdEvent('banner-error', error)} />
             <Button label={t('ads.report')} variant="ghost" onPress={() => router.push('/report-ad' as never)} />
           </View>
         </AdErrorBoundary>
       );
     } catch {
+      recordAdEvent('banner-error');
       return null;
     }
   }

@@ -5,13 +5,16 @@
   },
   "build": {
     "development": {
+      "env": { "EXPO_PUBLIC_ADS_TEST_MODE": "true" },
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
+      "env": { "EXPO_PUBLIC_ADS_TEST_MODE": "true" },
       "distribution": "internal"
     },
     "production": {
+      "env": { "EXPO_PUBLIC_ADS_TEST_MODE": "false" },
       "autoIncrement": true
     }
   }

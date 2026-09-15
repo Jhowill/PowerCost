@@ -3,11 +3,12 @@ import * as Network from 'expo-network';
 import { AppState, Platform } from 'react-native';
 
 import { getAdUnitId } from '../config/ads';
+import { recordAdEvent } from './adDiagnostics';
 
 declare const require: (moduleName: string) => Record<string, unknown>;
 
 type FullscreenAd = {
-  addAdEventListener: (event: string, callback: () => void) => () => void;
+  addAdEventListener: (event: string, callback: (error?: unknown) => void) => () => void;
   load: () => void;
   show: () => Promise<void>;
 };
@@ -18,6 +19,23 @@ export const nativeAdsAvailable =
 let fullscreenAdShowing = false;
 let adsReady = false;
 let initializationPromise: Promise<boolean> | null = null;
+let consentBlocked = false;
+let nextRetryAt = 0;
+let failures = 0;
+const readyListeners = new Set<(ready: boolean) => void>();
+export const subscribeAdsReady = (listener: (ready: boolean) => void) => {
+  readyListeners.add(listener);
+  listener(adsReady);
+  return () => { readyListeners.delete(listener); };
+};
+const setAdsReady = (ready: boolean) => {
+  adsReady = ready;
+  readyListeners.forEach((listener) => listener(ready));
+};
+export const retryAdsInitialization = async () => {
+  if (fullscreenAdShowing || AppState.currentState !== 'active') return false;
+  return initializeAds();
+};
 
 export type RewardedAdResult = 'earned' | 'offline' | 'unavailable';
 
@@ -61,22 +79,32 @@ const startMobileAds = async (ads: MobileAdsModule) => {
     });
     await mobileAds.initialize();
   }
-  adsReady = true;
+  failures = 0;
+  nextRetryAt = 0;
+  setAdsReady(true);
+  recordAdEvent('init-ready');
 };
 
 export const initializeAds = async (): Promise<boolean> => {
-  if (!nativeAdsAvailable) return true;
+  if (!nativeAdsAvailable) { setAdsReady(true); return true; }
   if (adsReady) return true;
+  if (consentBlocked || Date.now() < nextRetryAt || AppState.currentState !== 'active') return false;
   if (!(await hasInternetConnection())) return false;
   if (!initializationPromise) {
     initializationPromise = (async () => {
       try {
         const ads = require('react-native-google-mobile-ads') as unknown as MobileAdsModule;
         const consent = await ads.AdsConsent.gatherConsent();
-        if (!consent.canRequestAds) return false;
+        if (!consent.canRequestAds) {
+          consentBlocked = true;
+          recordAdEvent('consent-blocked');
+          return false;
+        }
         await startMobileAds(ads);
         return true;
-      } catch {
+      } catch (error) {
+        nextRetryAt = Date.now() + Math.min(300_000, 30_000 * 2 ** Math.min(failures++, 4));
+        recordAdEvent('init-error', error);
         // Falhas de consentimento ou anúncios nunca bloqueiam o app.
         return false;
       }
@@ -111,7 +139,8 @@ export const preloadInterstitialAd = () => {
     const cleanups: (() => void)[] = [];
     let timer: ReturnType<typeof setTimeout>;
     const dispose = () => { clearTimeout(timer); cleanups.splice(0).forEach((fn) => fn()); };
-    const fail = () => {
+    const fail = (error?: unknown) => {
+      recordAdEvent('interstitial-error', error);
       dispose();
       if (generation === preloadGeneration) {
         interstitialLoading = false;
@@ -123,15 +152,16 @@ export const preloadInterstitialAd = () => {
       if (generation !== preloadGeneration) { dispose(); return; }
       interstitialLoading = false;
       cachedInterstitial = { ad, loadedAt: Date.now(), dispose };
+      recordAdEvent('interstitial-loaded');
     }));
     cleanups.push(ad.addAdEventListener(sdk.AdEventType.ERROR, fail));
     timer = setTimeout(fail, 15_000);
     try { ad.load(); } catch { fail(); }
-  } catch { interstitialLoading = false; }
+  } catch { recordAdEvent('interstitial-error'); interstitialLoading = false; }
 };
 
-export const showRewardedAd = async (onEarned: () => void = () => {}): Promise<RewardedAdResult> => {
-  if (!nativeAdsAvailable || fullscreenAdShowing || AppState.currentState !== 'active') return 'unavailable';
+export const showRewardedAd = async (onEarned: () => void = () => {}, signal?: AbortSignal): Promise<RewardedAdResult> => {
+  if (signal?.aborted || !nativeAdsAvailable || fullscreenAdShowing || AppState.currentState !== 'active') return 'unavailable';
   fullscreenAdShowing = true;
   let cancelled = false;
   const pending = AppState.addEventListener('change', (state) => { if (state !== 'active') cancelled = true; });
@@ -139,7 +169,7 @@ export const showRewardedAd = async (onEarned: () => void = () => {}): Promise<R
   const ready = connected && (adsReady || await bounded(initializeAds(), 15_000));
   pending.remove();
   if (!connected) { fullscreenAdShowing = false; return 'offline'; }
-  if (!ready || cancelled || AppState.currentState !== 'active') {
+  if (!ready || cancelled || signal?.aborted || AppState.currentState !== 'active') {
     fullscreenAdShowing = false; return 'unavailable';
   }
   try {
@@ -165,26 +195,34 @@ export const showRewardedAd = async (onEarned: () => void = () => {}): Promise<R
       const lifecycle = AppState.addEventListener('change', (state) => {
         if (!presenting && state !== 'active') finish();
       });
+      const fail = (error?: unknown) => { recordAdEvent('reward-error', error); finish(); };
       cleanups.push(() => lifecycle.remove());
+      const cancel = () => {
+        // Once presented, keep listening until closure so earned rewards are never lost.
+        if (!presenting) { recordAdEvent('reward-cancelled'); finish(); }
+      };
+      signal?.addEventListener('abort', cancel);
+      cleanups.push(() => signal?.removeEventListener('abort', cancel));
       cleanups.push(ad.addAdEventListener(sdk.RewardedAdEventType.LOADED, () => {
         if (settled) return;
-        if (AppState.currentState !== 'active' || !adsReady) { finish(); return; }
+        if (signal?.aborted || AppState.currentState !== 'active' || !adsReady) { finish(); return; }
         clearTimeout(timer);
         presenting = true;
         // No presentation timeout: only native closure/error may release this lock.
-        try { void ad.show().catch(finish); } catch { finish(); }
+        try { void ad.show().catch(fail); } catch { fail(); }
       }));
       cleanups.push(ad.addAdEventListener(sdk.RewardedAdEventType.EARNED_REWARD, () => {
         if (earned || settled) return;
         earned = true;
+        recordAdEvent('reward-earned');
         onEarned();
       }));
       cleanups.push(ad.addAdEventListener(sdk.AdEventType.CLOSED, finish));
-      cleanups.push(ad.addAdEventListener(sdk.AdEventType.ERROR, finish));
-      timer = setTimeout(finish, 15_000);
-      try { ad.load(); } catch { finish(); }
+      cleanups.push(ad.addAdEventListener(sdk.AdEventType.ERROR, fail));
+      timer = setTimeout(fail, 15_000);
+      try { ad.load(); } catch { fail(); }
     });
-  } catch { fullscreenAdShowing = false; return 'unavailable'; }
+  } catch { recordAdEvent('reward-error'); fullscreenAdShowing = false; return 'unavailable'; }
 };
 
 export const showInterstitialAd = async (): Promise<boolean> => {
@@ -206,6 +244,7 @@ export const showInterstitialAd = async (): Promise<boolean> => {
       const cleanups: (() => void)[] = [];
       const finish = (shown: boolean) => {
         if (settled) return;
+        if (!shown) recordAdEvent('interstitial-error');
         settled = true;
         cleanups.forEach((fn) => fn());
         fullscreenAdShowing = false;
@@ -216,7 +255,7 @@ export const showInterstitialAd = async (): Promise<boolean> => {
       cleanups.push(cached.ad.addAdEventListener(sdk.AdEventType.ERROR, () => finish(false)));
       try { void cached.ad.show().catch(() => finish(false)); } catch { finish(false); }
     });
-  } catch { fullscreenAdShowing = false; return false; }
+  } catch { recordAdEvent('interstitial-error'); fullscreenAdShowing = false; return false; }
 };
 
 // Retained as an explicit disabled API. No delayed ads on foreground transitions.
@@ -229,8 +268,9 @@ export const showAdsPrivacyOptions = async (): Promise<{ opened: boolean; adsRea
   try {
     const ads = require('react-native-google-mobile-ads') as unknown as MobileAdsModule;
     const consent = await ads.AdsConsent.showPrivacyOptionsForm();
+    consentBlocked = !consent.canRequestAds;
     if (consent.canRequestAds) await startMobileAds(ads);
-    else { adsReady = false; cancelPreloadedAds(); }
+    else { setAdsReady(false); cancelPreloadedAds(); }
     return { opened: true, adsReady };
   } catch {
     return { opened: false, adsReady };

@@ -5,7 +5,7 @@ import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo
 import { AppState, useColorScheme } from 'react-native';
 
 import { translate } from '../i18n/translations';
-import { initializeAds, RewardedAdResult, showAdsPrivacyOptions, preloadInterstitialAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
+import { retryAdsInitialization, subscribeAdsReady, RewardedAdResult, showAdsPrivacyOptions, preloadInterstitialAd, showInterstitialAd, showRewardedAd } from '../services/adsService';
 import { palettes } from '../theme';
 import {
   AdsState,
@@ -108,7 +108,7 @@ type AppContextValue = {
   setTheme: (theme: AppTheme) => void;
   setDefaultTariff: (value: number) => void;
   updatePlan: (updates: Partial<EnergyPlan>) => void;
-  unlockFeature: (feature: RewardedFeature) => Promise<RewardedAdResult>;
+  unlockFeature: (feature: RewardedFeature, signal?: AbortSignal) => Promise<RewardedAdResult>;
   openAdsPrivacyOptions: () => Promise<boolean>;
   maybeShowInterstitial: () => Promise<void>;
   canShowBanner: boolean;
@@ -194,12 +194,12 @@ export function AppProvider({ children }: PropsWithChildren) {
       setAdsInitialized(false);
       return;
     }
-    void initializeAds().then((ready) => {
-      if (active) setAdsInitialized(ready);
-    }).catch(() => {
-      if (active) setAdsInitialized(false);
-    });
-    return () => { active = false; };
+    const unsubscribe = subscribeAdsReady((ready) => { if (active) setAdsInitialized(ready); });
+    const retry = () => { void retryAdsInitialization().catch(() => {}); };
+    retry();
+    const timer = setInterval(retry, 30_000);
+    const lifecycle = AppState.addEventListener('change', (state) => { if (state === 'active') retry(); });
+    return () => { active = false; unsubscribe(); clearInterval(timer); lifecycle.remove(); };
   }, [internetAvailable]);
 
   useEffect(() => {
@@ -311,7 +311,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setPlan((value) => ({ ...value, appliances: [item, ...value.appliances.filter((existing) => existing.id !== id)], updatedAt: now() }));
     setCurrentSimulation({ ...currentSimulation, input: item.input });
   };
-  const unlockFeature = async (feature: RewardedFeature) => {
+  const unlockFeature = async (feature: RewardedFeature, signal?: AbortSignal) => {
     if (!internetAvailable) return 'offline';
     if (!writable.current.has(STORAGE.ads)) return 'unavailable';
     const simulationId = currentSimulation?.id;
@@ -332,7 +332,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       adsRef.current = next;
       setAds(next);
       persist(STORAGE.ads, next);
-    });
+    }, signal);
   };
 
   const adFreeActive = isActiveUntil(ads.adFreeUntil);

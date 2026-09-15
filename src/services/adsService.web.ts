@@ -3,6 +3,13 @@ import type { RewardedAdResult } from './adsService';
 export const nativeAdsAvailable = false;
 
 export const initializeAds = async (): Promise<boolean> => true;
+export const retryAdsInitialization = initializeAds;
+export const subscribeAdsReady = (listener: (ready: boolean) => void) => {
+  listener(true);
+  return () => {};
+};
+export const preloadInterstitialAd = () => {};
+export const cancelPreloadedAds = () => {};
 
 export const showRewardedAd = async (): Promise<RewardedAdResult> => 'unavailable';
 

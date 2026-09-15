@@ -20,4 +20,5 @@ const IOS_AD_UNITS: Record<AdUnitKind, string> = {
 
 export const PRODUCTION_AD_UNITS = Platform.OS === 'ios' ? IOS_AD_UNITS : ANDROID_AD_UNITS;
 
-export const getAdUnitId = (kind: AdUnitKind, testId: string) => (__DEV__ ? testId : PRODUCTION_AD_UNITS[kind]);
+export const getAdUnitId = (kind: AdUnitKind, testId: string) =>
+  (__DEV__ || process.env.EXPO_PUBLIC_ADS_TEST_MODE === 'true' ? testId : PRODUCTION_AD_UNITS[kind]);

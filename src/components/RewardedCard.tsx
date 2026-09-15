@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { useApp } from '../context/AppContext';
@@ -18,16 +19,25 @@ export function RewardedCard({ title, description, duration, feature, icon = 'gi
 }) {
   const { colors, t, unlockFeature } = useApp();
   const [loading, setLoading] = useState(false);
+  const request = useRef<AbortController | null>(null);
+  useFocusEffect(useCallback(() => {
+    setLoading(false);
+    return () => { request.current?.abort(); request.current = null; };
+  }, []));
   const isActive = active || Boolean(activeUntil && new Date(activeUntil).getTime() > Date.now());
   const onWatch = async () => {
+    if (request.current) return;
+    const controller = new AbortController();
+    request.current = controller;
     setLoading(true);
     try {
-      const result = await unlockFeature(feature);
+      const result = await unlockFeature(feature, controller.signal);
+      if (controller.signal.aborted) return;
       Alert.alert(result === 'earned' ? t('ads.unlocked') : result === 'offline' ? t('ads.offline') : t('ads.failed'));
     } catch {
-      Alert.alert(t('ads.failed'));
+      if (!controller.signal.aborted) Alert.alert(t('ads.failed'));
     } finally {
-      setLoading(false);
+      if (request.current === controller) { request.current = null; setLoading(false); }
     }
   };
   const expiryDate = activeUntil ? new Date(activeUntil) : null;
